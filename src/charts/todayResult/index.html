@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style>
+      html,
+      body {
+        background-color: #2660a4;
+        overflow: hidden;
+      }
+
+      #container {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: -80px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <script>
+      Highcharts.setOptions({
+        colors: ["#0077B6", "#EDF7F6"],
+      });
+      Highcharts.chart("container", {
+        chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: "pie",
+          backgroundColor: "#2660A4",
+        },
+        exporting: {
+          enabled: false,
+        },
+        title: {
+          text: "80%",
+          y: 170,
+          style: {
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "30px",
+          },
+        },
+        subtitle: {
+          text: "20 dakika kaldı",
+          y: 200,
+          style: {
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "20px",
+          },
+        },
+        legend: {
+          enabled: true,
+          x: 0,
+          y: -40,
+          layout: "vertical",
+          itemStyle: {
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "15px",
+          },
+        },
+        tooltip: {
+          headerFormat: "",
+          pointFormat: "{point.name}: <b>{point.y} dk</b>",
+        },
+        plotOptions: {
+          pie: {
+            allowPointSelect: false,
+            cursor: "pointer",
+            dataLabels: {
+              enabled: false,
+            },
+            showInLegend: true,
+            borderColor: "transparent",
+            size: "110%",
+          },
+        },
+        series: [
+          {
+            name: "Sonuç",
+            colorByPoint: true,
+            innerSize: "85%",
+            data: [
+              {
+                name: "Kullanılan",
+                y: 48,
+              },
+              {
+                name: "Kalan",
+                y: 12,
+              },
+            ],
+          },
+        ],
+      });
+    </script>
+  </body>
+</html>

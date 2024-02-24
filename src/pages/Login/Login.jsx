@@ -15,14 +15,11 @@ function Login({ navigation }) {
 
   return (
     <View className="flex flex-col h-screen bg-funBlue">
-      <View
-        style={{ flex: 3 / 10 }}
-        className="flex justify-center items-center"
-      >
+      <View className="flex-[3] justify-center items-center">
         <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
 
-      <View style={{ flex: 4 / 10 }} className="px-4">
+      <View className="px-4 flex-[4]">
         <View style={{ flex: 3 / 9 }} className="gap-4">
           <View className="gap-2">
             <TextInput
@@ -63,7 +60,7 @@ function Login({ navigation }) {
         </View>
       </View>
 
-      <View style={{ flex: 2 / 10 }} className="gap-4">
+      <View className="gap-4 flex-[2]">
         <View className="flex-row items-center justify-center">
           <View className="w-1/4 h-0.5 bg-white"></View>
           <View className="w-2/4 justify-center items-center">
@@ -91,10 +88,7 @@ function Login({ navigation }) {
         </View>
       </View>
 
-      <View
-        style={{ flex: 1 / 10 }}
-        className="flex flex-row justify-center  gap-2"
-      >
+      <View className="flex-[1] flex-row justify-center gap-2">
         <Text className="text-[16px] text-white">Üye değil misiniz ?</Text>
         <Pressable onPress={() => navigation.navigate("Register")}>
           <Text className="text-[16px] text-saffronMango underline">
