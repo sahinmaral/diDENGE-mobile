@@ -4,7 +4,6 @@ import socialMediaAddictiveLevelIdentificationTestQuestions from "../../constant
 import { AntDesign } from "@expo/vector-icons";
 import AnswerButton from "./AnswerButton";
 import Container from "../../components/Container/Container";
-import Row from "../../components/Container/Row";
 import SocialMediaAddictiveLevelQuestionAnswers from "../../enums/SocialMediaAddictiveLevelQuestionAnswers";
 import QuestionMove from "../../enums/QuestionMove";
 
@@ -85,21 +84,21 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
 
   return (
     <Container>
-      <Row
-        customClasses="w-full flex items-center justify-center my-2"
-        flex={1.7 / 10}
+      <View
+        className="w-full flex items-center justify-center my-2"
+        flex={1 / 10}
       >
         <Text className="font-semibold text-white text-[40px]">
           Soru {questionInformations.currentIndex + 1}
         </Text>
-      </Row>
-      <Row customClasses="w-full px-4" flex={1.5 / 10}>
-        <View className="rounded-md bg-white p-4 items-center justify-center flex my-2">
+      </View>
+      <View className="w-full px-4" flex={2.2 / 10}>
+        <View className="h-3/4 rounded-md bg-white p-4 items-center justify-center flex my-2">
           <Text className="text-[16px] text-center">{currentQuestion}</Text>
         </View>
-      </Row>
-      <Row
-        customClasses={`w-full flex flex-row px-4 my-2 ${arrowButtonPlacement}`}
+      </View>
+      <View
+        className={`w-full flex flex-row px-4 my-2 ${arrowButtonPlacement}`}
         flex={1 / 10}
       >
         {!isFirstQuestion ? (
@@ -118,8 +117,8 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
             <AntDesign name="right" size={20} color="black" />
           </Pressable>
         ) : null}
-      </Row>
-      <Row customClasses="w-full flex items-end my-2" flex={5 / 10}>
+      </View>
+      <View className="w-full flex items-end my-2" flex={5 / 10}>
         {Object.entries(SocialMediaAddictiveLevelQuestionAnswers).map(
           ([answer, value], index) => (
             <AnswerButton
@@ -129,8 +128,8 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
             />
           )
         )}
-      </Row>
-      <Row customClasses="w-full bg-white relative mt-2" flex={0.8 / 10}>
+      </View>
+      <View className="w-full bg-white relative mt-2" flex={0.8 / 10}>
         <View
           className="bg-saffronMango h-full"
           style={{ width: `${percentOfProgress}%` }}
@@ -141,7 +140,7 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
             {socialMediaAddictiveLevelIdentificationTestQuestions.length}
           </Text>
         </View>
-      </Row>
+      </View>
     </Container>
   );
 }
