@@ -4,6 +4,7 @@ import logo from "../../../assets/logo.png";
 import { Image } from "expo-image";
 import { FontAwesome } from "@expo/vector-icons";
 import Container from "../../components/Container/Container";
+import { Formik } from 'formik';
 
 function Register({ navigation }) {
   const [securePassword, setSecurePassword] = useState({
@@ -20,25 +21,38 @@ function Register({ navigation }) {
       <View className="flex-[3] justify-center items-center">
         <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
-
+      <Formik
+     initialValues={{ nameAndSurname: '',email: '',password: '' ,passwordConfirm: ''}}
+     onSubmit={values => console.log(values)}>
+      {({ handleChange, handleBlur, handleSubmit, values }) => (
       <View className="px-4 flex-[5]">
         <View className="gap-4 flex-[3]">
+        
           <View className="gap-2">
             <TextInput
-              className="border-b border-white text-[16px] pt-2 pb-4"
+              className="border-b border-white text-[16px] pt-2 pb-4 text-white"
               placeholderTextColor="white"
               placeholder="Ad soyad"
+              onChangeText={handleChange('nameAndSurname')}
+              onBlur={handleBlur('nameAndSurname')}
+              value={values.nameAndSurname}
             />
             <TextInput
-              className="border-b border-white text-[16px] pt-2 pb-4"
+              className="border-b border-white text-[16px] pt-2 pb-4 text-white"
               placeholderTextColor="white"
               placeholder="E-posta adresi"
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+              value={values.email}
             />
             <View>
               <TextInput
                 className="border-b border-white text-[16px] text-white pt-2 pb-4"
                 placeholderTextColor="white"
                 placeholder="Şifre"
+                onChangeText={handleChange('password')}
+                onBlur={handleBlur('password')}
+                value={values.password}
                 secureTextEntry={securePassword.password}
               />
               <Pressable
@@ -57,6 +71,9 @@ function Register({ navigation }) {
                 className="border-b border-white text-[16px] text-white pt-2 pb-4"
                 placeholderTextColor="white"
                 placeholder="Şifre Tekrar"
+                onChangeText={handleChange('passwordConfirm')}
+                onBlur={handleBlur('passwordConfirm')}
+                value={values.passwordConfirm}
                 secureTextEntry={securePassword.passwordConfirm}
               />
               <Pressable
@@ -71,15 +88,17 @@ function Register({ navigation }) {
               </Pressable>
             </View>
           </View>
+          
         </View>
         <View className="flex-[4]"></View>
         <View className="flex-[2]">
-          <Pressable className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]">
+          <Pressable onPress={handleSubmit} className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]">
             <Text className="text-white text-[22px] font-light">Kayıt Ol</Text>
           </Pressable>
         </View>
       </View>
-
+      )}
+      </Formik>
       <View className="flex-[2] flex-row justify-center gap-2">
         <Text className="text-[16px] text-white">Üye misiniz ?</Text>
         <Pressable onPress={() => navigation.navigate("Login")}>
