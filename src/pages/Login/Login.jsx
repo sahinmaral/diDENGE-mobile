@@ -5,6 +5,7 @@ import facebook from "../../../assets/facebook.png";
 import google from "../../../assets/google.png";
 import { Image } from "expo-image";
 import { FontAwesome } from "@expo/vector-icons";
+import Container from "../../components/Container/Container";
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
@@ -14,7 +15,7 @@ function Login({ navigation }) {
   };
 
   return (
-    <View className="flex flex-col h-screen bg-funBlue">
+    <Container>
       <View className="flex-[3] justify-center items-center">
         <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
@@ -96,7 +97,7 @@ function Login({ navigation }) {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </Container>
   );
 }
 

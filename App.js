@@ -30,7 +30,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar hidden={true} />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName='SocialMediaAddictiveLevelIdentification' screenOptions={{ headerShown: false, }}>
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="App" component={AppTabNavigatorRoutes} />

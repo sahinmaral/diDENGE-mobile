@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import logo from "../../../assets/logo.png";
-import facebook from "../../../assets/facebook.png";
-import google from "../../../assets/google.png";
 import { Image } from "expo-image";
 import { FontAwesome } from "@expo/vector-icons";
+import Container from "../../components/Container/Container";
 
 function Register({ navigation }) {
   const [securePassword, setSecurePassword] = useState({
@@ -17,8 +16,8 @@ function Register({ navigation }) {
   };
 
   return (
-    <View className="flex flex-col h-screen bg-funBlue">
-      <View className="flex-[3] justify-center items-center ">
+    <Container>
+      <View className="flex-[3] justify-center items-center">
         <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
 
@@ -89,7 +88,7 @@ function Register({ navigation }) {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </Container>
   );
 }
 
