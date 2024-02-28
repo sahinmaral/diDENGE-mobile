@@ -6,6 +6,7 @@ import google from "../../../assets/google.png";
 import { Image } from "expo-image";
 import { FontAwesome } from "@expo/vector-icons";
 import Container from "../../components/Container/Container";
+import { Formik } from "formik";
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
@@ -13,13 +14,22 @@ function Login({ navigation }) {
   const togglePasswordVisibility = () => {
     setSecurePassword((prev) => !prev);
   };
-
+  
+  const formInputValues = {
+    email: "",
+    password: "",
+  };
+  
   return (
     <Container>
       <View className="flex-[3] justify-center items-center">
         <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
-
+      <Formik
+        initialValues={formInputValues}
+        onSubmit={(values) => console.log(values)}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values }) => (
       <View className="px-4 flex-[4]">
         <View style={{ flex: 3 / 9 }} className="gap-4">
           <View className="gap-2">
@@ -27,13 +37,19 @@ function Login({ navigation }) {
               className="border-b border-white text-[16px] text-white pt-2 pb-4"
               placeholderTextColor="white"
               placeholder="E-posta adresi"
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+              value={values.email}
             />
             <View>
               <TextInput
                 className="border-b border-white text-[16px] text-white pt-2 pb-4"
                 placeholderTextColor="white"
                 placeholder="Şifre"
-                secureTextEntry={securePassword}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                value={values.password}
+                secureTextEntry={securePassword.password}
               />
               <Pressable
                 onPress={togglePasswordVisibility}
@@ -55,12 +71,13 @@ function Login({ navigation }) {
         </View>
         <View style={{ flex: 4 / 9 }}></View>
         <View style={{ flex: 2 / 9 }}>
-          <Pressable className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]">
+          <Pressable onPress={handleSubmit} className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]">
             <Text className="text-white text-[22px] font-light">Giriş yap</Text>
           </Pressable>
         </View>
       </View>
-
+          )}
+          </Formik>
       <View className="gap-4 flex-[2]">
         <View className="flex-row items-center justify-center">
           <View className="w-1/4 h-0.5 bg-white"></View>
