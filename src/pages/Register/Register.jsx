@@ -22,7 +22,7 @@ function Register({ navigation }) {
     password: "",
     passwordConfirm: "",
   };
-  
+
   return (
     <Container>
       <View className="flex-[3] justify-center items-center">
