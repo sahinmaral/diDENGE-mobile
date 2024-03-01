@@ -4,33 +4,17 @@ import Login from './src/pages/Login';
 import Register from './src/pages/Register';
 import SocialMediaAddictiveLevelIdentification from './src/pages/SocialMediaAddictiveLevelIdentification';
 import ResultOfAddictiveLevel from './src/pages/ResultOfAddictiveLevel';
-import Homepage from './src/pages/Homepage';
-import { View } from 'react-native';
-import TabButtonGroup from './src/components/TabButtonGroup';
 import { StatusBar } from 'expo-status-bar';
-
-const Stack = createNativeStackNavigator();
-
-
-
-function AppTabNavigatorRoutes() {
-  return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 0.92 }}>
-        <Stack.Navigator initialRouteName="Homepage" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Homepage" component={Homepage} />
-        </Stack.Navigator>
-      </View>
-      <TabButtonGroup />
-    </View>
-  );
-}
+import AppTabNavigatorRoutes from './src/routes/AppTabNavigationRoutes';
 
 export default function App() {
+
+  const Stack = createNativeStackNavigator();
+
   return (
     <NavigationContainer>
       <StatusBar hidden={true} />
-      <Stack.Navigator initialRouteName='SocialMediaAddictiveLevelIdentification' screenOptions={{ headerShown: false, }}>
+      <Stack.Navigator initialRouteName='App' screenOptions={{ headerShown: false, }}>
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="App" component={AppTabNavigatorRoutes} />

@@ -1,23 +1,27 @@
-import { useNavigation } from "@react-navigation/native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { default as FeatherIcon } from "react-native-vector-icons/Feather";
 import { StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-function TabButtonGroup() {
+function TabButtonGroup({ currentScreen }) {
   const navigation = useNavigation();
 
   const handleTabPress = (screenName) => {
     navigation.navigate(screenName);
   };
 
-  const renderTabBarIcons = (route) => {
+  const renderTabBarIcons = (definedRoute) => {
     let iconName;
     let routeName;
 
-    switch (route) {
+    switch (definedRoute) {
       case "Homepage":
         iconName = "home";
         routeName = "Anasayfa";
+        break;
+      case "Settings":
+        iconName = "settings";
+        routeName = "Ayarlar";
         break;
       default:
         break;
@@ -26,7 +30,13 @@ function TabButtonGroup() {
     return (
       <>
         <FeatherIcon name={iconName} color={"#2660A4"} size={24} />
-        <Text className="text-black">{routeName}</Text>
+        <Text
+          className={`text-black ${
+            currentScreen === definedRoute ? "font-bold" : "font-base"
+          }`}
+        >
+          {routeName}
+        </Text>
       </>
     );
   };
@@ -38,6 +48,12 @@ function TabButtonGroup() {
         style={styles.button.container}
       >
         {renderTabBarIcons("Homepage")}
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handleTabPress("Settings")}
+        style={styles.button.container}
+      >
+        {renderTabBarIcons("Settings")}
       </TouchableOpacity>
     </View>
   );

@@ -5,8 +5,13 @@ import { Image } from "expo-image";
 import { Entypo } from "@expo/vector-icons";
 import WebView from "react-native-webview";
 import todayResultGraph from "../../charts/todayResult/index.html";
+import { useEffect } from "react";
 
-function Homepage() {
+function Homepage({ updateCurrentScreen }) {
+  useEffect(() => {
+    updateCurrentScreen("Homepage");
+  }, []);
+
   return (
     <Container customClasses="px-4">
       <View className="flex flex-row justify-between items-center my-2 flex-[2]">
