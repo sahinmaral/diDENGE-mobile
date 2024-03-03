@@ -1,9 +1,10 @@
 import { View } from "react-native";
 import { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import TabButtonGroup from "../components/TabButtonGroup";
 import Settings from "../pages/Settings";
 import Homepage from "../pages/Homepage";
-import TabButtonGroup from "../components/TabButtonGroup";
+import MyProfile from "../pages/MyProfile";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();
@@ -17,6 +18,7 @@ function AppTabNavigatorRoutes() {
   const HomepageScreen = () => (
     <Homepage updateCurrentScreen={updateCurrentScreen} />
   );
+
   const SettingsScreen = () => (
     <Settings updateCurrentScreen={updateCurrentScreen} />
   );
@@ -25,11 +27,12 @@ function AppTabNavigatorRoutes() {
     <View style={{ flex: 1 }}>
       <View style={{ flex: 0.92 }}>
         <Stack.Navigator
-          initialRouteName="Settings"
+          initialRouteName="Homepage"
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="Homepage" component={HomepageScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="MyProfile" component={MyProfile} />
         </Stack.Navigator>
       </View>
       <TabButtonGroup currentScreen={currentScreen} />
