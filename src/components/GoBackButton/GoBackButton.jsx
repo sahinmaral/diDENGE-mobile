@@ -6,7 +6,7 @@ function GoBackButton({ navigation, header }) {
     <View className="flex-[2] flex-row items-center gap-4">
       <Pressable
         className="w-[50px] h-[50px] rounded-full bg-saffronMango flex items-center justify-center"
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("Homepage")}
       >
         <AntDesign name="left" size={20} color="white" />
       </Pressable>

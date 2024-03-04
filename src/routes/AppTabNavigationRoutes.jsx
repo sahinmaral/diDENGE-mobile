@@ -5,8 +5,9 @@ import TabButtonGroup from "../components/TabButtonGroup";
 import Settings from "../pages/Settings";
 import Homepage from "../pages/Homepage";
 import MyProfile from "../pages/MyProfile";
+import MyProgress from "../pages/MyProgress";
 
-function AppTabNavigatorRoutes() {
+function AppTabNavigatorRoutes({ navigation }) {
   const Stack = createNativeStackNavigator();
 
   const [currentScreen, setCurrentScreen] = useState(null);
@@ -16,11 +17,24 @@ function AppTabNavigatorRoutes() {
   };
 
   const HomepageScreen = () => (
-    <Homepage updateCurrentScreen={updateCurrentScreen} />
+    <Homepage
+      updateCurrentScreen={updateCurrentScreen}
+      navigation={navigation}
+    />
   );
 
   const SettingsScreen = () => (
-    <Settings updateCurrentScreen={updateCurrentScreen} />
+    <Settings
+      updateCurrentScreen={updateCurrentScreen}
+      navigation={navigation}
+    />
+  );
+
+  const MyProgressScreen = () => (
+    <MyProgress
+      updateCurrentScreen={updateCurrentScreen}
+      navigation={navigation}
+    />
   );
 
   return (
@@ -33,6 +47,7 @@ function AppTabNavigatorRoutes() {
           <Stack.Screen name="Homepage" component={HomepageScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="MyProfile" component={MyProfile} />
+          <Stack.Screen name="MyProgress" component={MyProgressScreen} />
         </Stack.Navigator>
       </View>
       <TabButtonGroup currentScreen={currentScreen} />
