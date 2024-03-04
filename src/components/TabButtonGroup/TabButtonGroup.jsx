@@ -23,6 +23,10 @@ function TabButtonGroup({ currentScreen }) {
         iconName = "settings";
         routeName = "Ayarlar";
         break;
+      case "MyProgress":
+        iconName = "calendar";
+        routeName = "İlerlemeler";
+        break;
       default:
         break;
     }
@@ -48,6 +52,12 @@ function TabButtonGroup({ currentScreen }) {
         style={styles.button.container}
       >
         {renderTabBarIcons("Homepage")}
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handleTabPress("MyProgress")}
+        style={styles.button.container}
+      >
+        {renderTabBarIcons("MyProgress")}
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => handleTabPress("Settings")}
