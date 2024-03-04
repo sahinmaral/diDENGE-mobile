@@ -1,8 +1,8 @@
 import WebView from "react-native-webview";
-import dailyProgressResultGraph from "../../../charts/dailyProgressResult/index.html";
+import applicationBasedResultGraph from "../../../charts/applicationBasedResult/index.html";
 
 function Details() {
-  return <WebView source={dailyProgressResultGraph} />;
+  return <WebView source={applicationBasedResultGraph} />;
 }
 
 export default Details;
