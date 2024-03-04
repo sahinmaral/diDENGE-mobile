@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/Container/Container";
 import GoBackButton from "../../components/GoBackButton";
 import MyProgressSwitchButtons from "./MyProgressSwitchButtons";
-import { ScrollView, TextInput, View } from "react-native";
+import { View } from "react-native";
 import myProgressPages from "../../constants/myProgressPages";
 import ProgressPageMove from "../../enums/ProgressPageMove";
+import Calendar from "./Calendar";
 
 function MyProgress({ navigation, updateCurrentScreen }) {
   const [myProgressPageIndex, setMyProgressPageIndex] = useState(0);
@@ -47,7 +48,9 @@ function MyProgress({ navigation, updateCurrentScreen }) {
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="İlerlemeler" />
-      <View className="flex-[6]"></View>
+      <View className="flex-[6]">
+        <Calendar />
+      </View>
       <MyProgressSwitchButtons
         myProgressPage={myProgressPage}
         handleChangeMyProgressPage={handleChangeMyProgressPage}
