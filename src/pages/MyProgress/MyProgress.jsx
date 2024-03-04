@@ -7,8 +7,11 @@ import myProgressPages from "../../constants/myProgressPages";
 import ProgressPageMove from "../../enums/ProgressPageMove";
 import Calendar from "./Calendar";
 import Details from "./Details";
+import { useNavigation } from "@react-navigation/native";
 
-function MyProgress({ navigation, updateCurrentScreen }) {
+function MyProgress({ updateCurrentScreen }) {
+  const navigation = useNavigation();
+
   const [myProgressPageIndex, setMyProgressPageIndex] = useState(0);
 
   useEffect(() => {
