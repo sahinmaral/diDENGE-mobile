@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style>
+      html,
+      body {
+        background-color: #2660a4;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <script>
+      Highcharts.chart("container", {
+        chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          backgroundColor: "#2660A4",
+          type: "column",
+        },
+        title: {
+          text: "Saat bazlı sosyal medya uygulamalarında harcanan süre",
+          align: "center",
+          style: {
+            color: "white",
+            fontWeight: "300",
+            fontSize: "16px",
+          },
+        },
+        exporting: {
+          enabled: false,
+        },
+        xAxis: {
+          gridLineWidth: 1,
+          tickmarkPlacement: "on",
+          categories: [
+            "00:00",
+            "06:00",
+            "09:00",
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00",
+            "24:00",
+          ],
+          labels: {
+            style: {
+              color: "white",
+            },
+            align: "center",
+          },
+        },
+        yAxis: {
+          min: 0,
+          gridLineWidth: 0,
+          title: {
+            text: "",
+          },
+          labels: {
+            style: {
+              color: "white",
+            },
+          },
+        },
+        plotOptions: {
+          column: {
+            pointPadding: 0.2,
+            borderWidth: 0,
+          },
+        },
+        series: [
+          {
+            name: "Saatler",
+            data: [0, 0, 30, 30, 60, 60, 60, 75],
+          },
+        ],
+      });
+    </script>
+  </body>
+</html>

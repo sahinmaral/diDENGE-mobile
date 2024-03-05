@@ -4,8 +4,11 @@ import { useEffect } from "react";
 import GoBackButton from "../../components/GoBackButton";
 import { AntDesign } from "@expo/vector-icons";
 import MenuItem from "../../components/MenuItem/MenuItem";
+import { useNavigation } from "@react-navigation/native";
 
-function Settings({ navigation, updateCurrentScreen }) {
+function Settings({ updateCurrentScreen }) {
+  const navigation = useNavigation();
+
   useEffect(() => {
     updateCurrentScreen("Settings");
   }, []);

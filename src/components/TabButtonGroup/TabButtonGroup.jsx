@@ -6,8 +6,9 @@ import { useNavigation } from "@react-navigation/native";
 function TabButtonGroup({ currentScreen }) {
   const navigation = useNavigation();
 
-  const handleTabPress = (screenName) => {
-    navigation.navigate(screenName);
+  const handleTabPress = (screenName, params) => {
+    if (params) navigation.navigate(screenName, { ...params });
+    else navigation.navigate(screenName);
   };
 
   const renderTabBarIcons = (definedRoute) => {
@@ -26,6 +27,10 @@ function TabButtonGroup({ currentScreen }) {
       case "MyProgress":
         iconName = "calendar";
         routeName = "İlerlemeler";
+        break;
+      case "Statistics":
+        iconName = "bar-chart";
+        routeName = "İstatistikler";
         break;
       default:
         break;
@@ -52,6 +57,16 @@ function TabButtonGroup({ currentScreen }) {
         style={styles.button.container}
       >
         {renderTabBarIcons("Homepage")}
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() =>
+          handleTabPress("Statistics", {
+            selectedDate: new Date().toDateString(),
+          })
+        }
+        style={styles.button.container}
+      >
+        {renderTabBarIcons("Statistics")}
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => handleTabPress("MyProgress")}

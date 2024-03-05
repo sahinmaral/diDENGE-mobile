@@ -1,12 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Container from "../../components/Container/Container";
 import GoBackButton from "../../components/GoBackButton";
 import MyProgressSwitchButtons from "./MyProgressSwitchButtons";
-import { ScrollView, TextInput, View } from "react-native";
+import { View } from "react-native";
 import myProgressPages from "../../constants/myProgressPages";
 import ProgressPageMove from "../../enums/ProgressPageMove";
+import Calendar from "./Calendar";
+import Details from "./Details";
+import { useNavigation } from "@react-navigation/native";
 
-function MyProgress({ navigation, updateCurrentScreen }) {
+function MyProgress({ updateCurrentScreen }) {
+  const navigation = useNavigation();
+
   const [myProgressPageIndex, setMyProgressPageIndex] = useState(0);
 
   useEffect(() => {
@@ -44,10 +49,19 @@ function MyProgress({ navigation, updateCurrentScreen }) {
     }
   };
 
+  const renderContentOfMyProgressPage = useCallback(() => {
+    switch (myProgressPageIndex) {
+      case 0:
+        return <Calendar />;
+      case 1:
+        return <Details />;
+    }
+  }, [myProgressPageIndex]);
+
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="İlerlemeler" />
-      <View className="flex-[6]"></View>
+      <View className="flex-[6]">{renderContentOfMyProgressPage()}</View>
       <MyProgressSwitchButtons
         myProgressPage={myProgressPage}
         handleChangeMyProgressPage={handleChangeMyProgressPage}
