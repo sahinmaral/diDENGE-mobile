@@ -38,8 +38,7 @@ const DropdownComponent = () => {
       renderRightIcon={() => (
         <AntDesign
           style={styles.icon}
-          color={isFocused ? 'blue' : 'black'}
-          name={isFocused ? '' : ''} //Burası eksik
+          name={isFocused ? 'up' : 'down'} 
           size={15}
         />
       )}
