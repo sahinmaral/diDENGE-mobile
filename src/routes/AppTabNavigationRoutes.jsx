@@ -8,9 +8,13 @@ import MyProfile from "../screens/MyProfile";
 import MyProgress from "../screens/MyProgress";
 import Statistics from "../screens/Statistics";
 import ContactForm from "../screens/ContactForm";
+import CheckInternet from "../screens/CheckInternet";
+import Loading from "../screens/Loading";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();
+  const netInfoState = useNetInfo();
 
   const [currentScreen, setCurrentScreen] = useState(null);
 
@@ -33,6 +37,14 @@ function AppTabNavigatorRoutes() {
   const StatisticsScreen = () => (
     <Statistics updateCurrentScreen={updateCurrentScreen} />
   );
+
+  if (netInfoState.type === "unknown") {
+    return <Loading />;
+  }
+
+  if (!netInfoState.isConnected) {
+    return <CheckInternet />;
+  }
 
   return (
     <View style={{ flex: 1 }}>
