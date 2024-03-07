@@ -2,14 +2,14 @@ import { Text, View } from "react-native";
 import { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabButtonGroup from "../components/TabButtonGroup";
-import Settings from "../screens/Settings";
-import Homepage from "../screens/Homepage";
-import MyProfile from "../screens/MyProfile";
-import MyProgress from "../screens/MyProgress";
-import Statistics from "../screens/Statistics";
+import Settings from "../pages/Settings";
+import Homepage from "../pages/Homepage";
+import MyProfile from "../pages/MyProfile";
+import MyProgress from "../pages/MyProgress";
+import Statistics from "../pages/Statistics";
 import { useNetInfo } from "@react-native-community/netinfo";
-import CheckInternet from "../screens/CheckInternet";
-import Loading from "../screens/Loading";
+import CheckInternet from "../pages/CheckInternet";
+import Loading from "../pages/Loading";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();

@@ -1,9 +1,9 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from './src/screens/Login';
-import Register from './src/screens/Register';
-import SocialMediaAddictiveLevelIdentification from './src/screens/SocialMediaAddictiveLevelIdentification';
-import ResultOfAddictiveLevel from './src/screens/ResultOfAddictiveLevel';
+import Login from './src/pages/Login';
+import Register from './src/pages/Register';
+import SocialMediaAddictiveLevelIdentification from './src/pages/SocialMediaAddictiveLevelIdentification';
+import ResultOfAddictiveLevel from './src/pages/ResultOfAddictiveLevel';
 import { StatusBar } from 'expo-status-bar';
 import AppTabNavigatorRoutes from './src/routes/AppTabNavigationRoutes';
 
