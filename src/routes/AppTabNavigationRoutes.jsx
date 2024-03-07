@@ -1,15 +1,20 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabButtonGroup from "../components/TabButtonGroup";
-import Settings from "../pages/Settings";
-import Homepage from "../pages/Homepage";
-import MyProfile from "../pages/MyProfile";
-import MyProgress from "../pages/MyProgress";
-import Statistics from "../pages/Statistics";
+import Settings from "../screens/Settings";
+import Homepage from "../screens/Homepage";
+import MyProfile from "../screens/MyProfile";
+import MyProgress from "../screens/MyProgress";
+import Statistics from "../screens/Statistics";
+import { useNetInfo } from "@react-native-community/netinfo";
+import CheckInternet from "../screens/CheckInternet";
+import Loading from "../screens/Loading";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();
+
+  const netInfoState = useNetInfo();
 
   const [currentScreen, setCurrentScreen] = useState(null);
 
@@ -32,6 +37,14 @@ function AppTabNavigatorRoutes() {
   const StatisticsScreen = () => (
     <Statistics updateCurrentScreen={updateCurrentScreen} />
   );
+
+  if (netInfoState.type === "unknown") {
+    return <Loading />;
+  }
+
+  if (!netInfoState.isConnected) {
+    return <CheckInternet />;
+  }
 
   return (
     <View style={{ flex: 1 }}>
