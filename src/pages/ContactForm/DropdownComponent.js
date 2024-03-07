@@ -23,15 +23,13 @@ const DropdownComponent = () => {
   return (
     <Dropdown
       className="text-[16px] py-2 bg-gray-100 text-center"
-      placeholderTextColor="gray"
+      containerStyle={styles.containerStyle}
       placeholderStyle={styles.placeholderStyle}
       selectedTextStyle={styles.selectedTextStyle}
-      inputSearchStyle={styles.inputSearchStyle}
-      iconStyle={styles.iconStyle}
       data={data}
       labelField="label"
       valueField="value"
-      placeholder={isFocused ? '' : '...'}
+      placeholder={isFocused ? '...' : 'Seçiniz'}
       value={value}
       onChange={item => setValue(item.value)}
       renderLeftIcon={null}
