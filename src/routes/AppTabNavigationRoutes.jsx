@@ -7,6 +7,7 @@ import Homepage from "../pages/Homepage";
 import MyProfile from "../pages/MyProfile";
 import MyProgress from "../pages/MyProgress";
 import Statistics from "../pages/Statistics";
+import ContactForm from "../pages/ContactForm";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();
@@ -45,6 +46,7 @@ function AppTabNavigatorRoutes() {
           <Stack.Screen name="MyProfile" component={MyProfile} />
           <Stack.Screen name="MyProgress" component={MyProgressScreen} />
           <Stack.Screen name="Statistics" component={StatisticsScreen} />
+          <Stack.Screen name="ContactForm" component={ContactForm} />
         </Stack.Navigator>
       </View>
       <TabButtonGroup currentScreen={currentScreen} />
