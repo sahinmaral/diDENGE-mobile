@@ -1,12 +1,22 @@
-import { Text } from "react-native";
+import LottieView from 'lottie-react-native';
+import React from 'react';
+import { View } from 'react-native';
 import Container from "../../components/Container/Container";
+import styles from './Loading.styles'; 
 
-function Loading() {
+const Loading = () => {
   return (
     <Container>
-      <Text className="text-4xl text-red-500">Loading</Text>
+    <View style={styles.container}>
+      <LottieView
+        source={require('../../../assets/loading.json')}
+        autoPlay
+        style={styles.animation}
+      />
+    </View>
     </Container>
   );
-}
+};
+
 
 export default Loading;
