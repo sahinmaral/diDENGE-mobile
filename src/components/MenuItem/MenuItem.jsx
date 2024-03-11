@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 
 function MenuItem({ header, subHeader, onPress }) {
   return (
@@ -12,7 +13,7 @@ function MenuItem({ header, subHeader, onPress }) {
         {subHeader ? (
           <Text className="text-white text-lg">{subHeader}</Text>
         ) : null}
-        <AntDesign name="right" size={20} color="#FFC857" />
+        <FontAwesomeIcon icon={faAngleRight} size={20} color="#FFC857" />
       </View>
     </TouchableOpacity>
   );

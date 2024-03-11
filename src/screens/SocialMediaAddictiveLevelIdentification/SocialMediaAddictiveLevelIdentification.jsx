@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import socialMediaAddictiveLevelIdentificationTestQuestions from "../../constants/socialMediaAddictiveLevelIdentificationTestQuestions";
-import { AntDesign } from "@expo/vector-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import AnswerButton from "./AnswerButton";
 import Container from "../../components/Container/Container";
 import SocialMediaAddictiveLevelQuestionAnswers from "../../enums/SocialMediaAddictiveLevelQuestionAnswers";
 import QuestionMove from "../../enums/QuestionMove";
+import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 
 function SocialMediaAddictiveLevelIdentification({ navigation }) {
   const [questionInformations, setQuestionInformations] = useState({
@@ -107,7 +108,7 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
             className="w-[50px] h-[50px] rounded-full bg-white flex items-center justify-center"
             onPress={() => moveQuestion(QuestionMove.Previous)}
           >
-            <AntDesign name="left" size={20} color="black" />
+            <FontAwesomeIcon icon={faAngleLeft} size={20} color="black" />
           </Pressable>
         ) : null}
         {!isLastQuestion ? (
@@ -115,7 +116,7 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
             className="w-[50px] h-[50px] rounded-full bg-white flex items-center justify-center"
             onPress={() => moveQuestion(QuestionMove.Next)}
           >
-            <AntDesign name="right" size={20} color="black" />
+            <FontAwesomeIcon icon={faAngleRight} size={20} color="black" />
           </Pressable>
         ) : null}
       </View>

@@ -1,11 +1,11 @@
 import Container from "../../components/Container/Container";
 import defaultUserImage from "../../../assets/default-user.png";
-import { View, Text, Pressable } from "react-native";
-import { Image } from "expo-image";
-import { Entypo } from "@expo/vector-icons";
+import { View, Text, Pressable, Image } from "react-native";
 import WebView from "react-native-webview";
 import todayResultGraph from "../../charts/todayResult/index.html";
 import { useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 function Homepage({ updateCurrentScreen }) {
   useEffect(() => {
@@ -16,11 +16,7 @@ function Homepage({ updateCurrentScreen }) {
     <Container customClasses="px-4">
       <View className="flex flex-row justify-between items-center my-2 flex-[2]">
         <View className="flex flex-row items-center space-x-4">
-          <Image
-            source={defaultUserImage}
-            className="w-[60px] h-[60px]"
-            contentFit="fill"
-          />
+          <Image source={defaultUserImage} className="w-[60px] h-[60px]" />
           <View>
             <Text className="text-saffronMango">Hoşgeldin</Text>
             <Text className="text-white text-[18px] font-medium">
@@ -31,7 +27,7 @@ function Homepage({ updateCurrentScreen }) {
 
         <View>
           <Pressable className="bg-saffronMango h-[60px] w-[60px] rounded-full items-center justify-center">
-            <Entypo name="magnifying-glass" size={24} color="black" />
+            <FontAwesomeIcon icon={faMagnifyingGlass} size={24} color="black" />
           </Pressable>
         </View>
       </View>

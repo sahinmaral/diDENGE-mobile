@@ -1,7 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
-import { TouchableOpacity, View, Text, Pressable } from "react-native";
+import {
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { useState } from "react";
+import { View } from "react-native";
 import { LocaleConfig, Calendar } from "react-native-calendars";
-import { Feather } from "@expo/vector-icons";
 
 LocaleConfig.locales["tr"] = {
   monthNames: [
@@ -52,10 +56,12 @@ const CalendarComponent = () => {
 
   const renderCustomArrow = (direction) => {
     if (direction === "left") {
-      return <Feather name="chevron-left" size={30} color="white" />;
+      return <FontAwesomeIcon icon={faChevronLeft} size={30} color="white" />;
     } else {
       if (currentMonth !== updatedMonth) {
-        return <Feather name="chevron-right" size={30} color="white" />;
+        return (
+          <FontAwesomeIcon icon={faChevronRight} size={30} color="white" />
+        );
       } else {
         return <View className="h-[30] w-[30]"></View>;
       }
