@@ -1,5 +1,6 @@
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Pressable, View, Text } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 
 function GoBackButton({ navigation, header }) {
   return (
@@ -8,7 +9,7 @@ function GoBackButton({ navigation, header }) {
         className="w-[50px] h-[50px] rounded-full bg-saffronMango flex items-center justify-center"
         onPress={() => navigation.navigate("Homepage")}
       >
-        <AntDesign name="left" size={20} color="white" />
+        <FontAwesomeIcon icon={faAngleLeft} size={20} color="white" />
       </Pressable>
       <Text className="text-white font-medium text-xl">{header}</Text>
     </View>

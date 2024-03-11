@@ -1,7 +1,13 @@
 import { Text, TouchableOpacity, View } from "react-native";
-import { default as FeatherIcon } from "react-native-vector-icons/Feather";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {
+  faChartSimple,
+  faGear,
+  faHouse,
+} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 
 function TabButtonGroup({ currentScreen }) {
   const navigation = useNavigation();
@@ -12,24 +18,24 @@ function TabButtonGroup({ currentScreen }) {
   };
 
   const renderTabBarIcons = (definedRoute) => {
-    let iconName;
+    let icon;
     let routeName;
 
     switch (definedRoute) {
       case "Homepage":
-        iconName = "home";
+        icon = faHouse;
         routeName = "Anasayfa";
         break;
       case "Settings":
-        iconName = "settings";
+        icon = faGear;
         routeName = "Ayarlar";
         break;
       case "MyProgress":
-        iconName = "calendar";
+        icon = faCalendar;
         routeName = "İlerlemeler";
         break;
       case "Statistics":
-        iconName = "bar-chart";
+        icon = faChartSimple;
         routeName = "İstatistikler";
         break;
       default:
@@ -38,7 +44,7 @@ function TabButtonGroup({ currentScreen }) {
 
     return (
       <>
-        <FeatherIcon name={iconName} color={"#2660A4"} size={24} />
+        <FontAwesomeIcon icon={icon} color={"#2660A4"} size={24} />
         <Text
           className={`text-black ${
             currentScreen === definedRoute ? "font-bold" : "font-base"

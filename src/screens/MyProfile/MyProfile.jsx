@@ -1,20 +1,15 @@
 import Container from "../../components/Container/Container";
 import GoBackButton from "../../components/GoBackButton";
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import MenuItem from "../../components/MenuItem/MenuItem";
 import defaultUserImage from "../../../assets/default-user.png";
-import { Image } from "expo-image";
 
 function MyProfile({ navigation }) {
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="Profilim" />
       <View className="flex-[1] flex-row gap-x-5 items-center">
-        <Image
-          source={defaultUserImage}
-          className="w-[80px] h-[80px]"
-          contentFit="fill"
-        />
+        <Image source={defaultUserImage} className="w-[80px] h-[80px]" />
         <View className="flex flex-col">
           <Text className="text-xl text-white font-medium">
             Ebubekir Sıddık

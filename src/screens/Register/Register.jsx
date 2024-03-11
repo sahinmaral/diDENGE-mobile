@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, TextInput, View, Image } from "react-native";
 import logo from "../../../assets/logo.png";
-import { Image } from "expo-image";
-import { FontAwesome } from "@expo/vector-icons";
 import Container from "../../components/Container/Container";
 import { Formik } from "formik";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 
 function Register({ navigation }) {
   const [securePassword, setSecurePassword] = useState({
@@ -67,9 +67,13 @@ function Register({ navigation }) {
                     style={{ position: "absolute", top: 12, right: 8 }}
                   >
                     {securePassword.password ? (
-                      <FontAwesome name="eye" size={24} color="#FFC857" />
+                      <FontAwesomeIcon icon={faEye} size={24} color="#FFC857" />
                     ) : (
-                      <FontAwesome name="eye-slash" size={24} color="#FFC857" />
+                      <FontAwesomeIcon
+                        icon={faEyeSlash}
+                        size={24}
+                        color="#FFC857"
+                      />
                     )}
                   </Pressable>
                 </View>
@@ -88,9 +92,13 @@ function Register({ navigation }) {
                     style={{ position: "absolute", top: 12, right: 8 }}
                   >
                     {securePassword.passwordConfirm ? (
-                      <FontAwesome name="eye" size={24} color="#FFC857" />
+                      <FontAwesomeIcon icon={faEye} size={24} color="#FFC857" />
                     ) : (
-                      <FontAwesome name="eye-slash" size={24} color="#FFC857" />
+                      <FontAwesomeIcon
+                        icon={faEyeSlash}
+                        size={24}
+                        color="#FFC857"
+                      />
                     )}
                   </Pressable>
                 </View>

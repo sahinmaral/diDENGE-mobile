@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import styles from './DropdownComponent.styles';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 const data = [
   { label: 'Teşekkür', value: '1' },
@@ -17,7 +17,7 @@ const DropdownComponent = () => {
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => {
     setIsFocused(false);
-    
+
   };
 
   return (
@@ -34,14 +34,14 @@ const DropdownComponent = () => {
       onChange={item => setValue(item.value)}
       renderLeftIcon={null}
       renderRightIcon={() => (
-        <AntDesign
+        <FontAwesomeIcon
           style={styles.icon}
-          name={isFocused ? 'up' : 'down'} 
+          name={isFocused ? faChevronUp : faChevronDown}
           size={15}
         />
       )}
-      onFocus={handleFocus} 
-      onBlur={handleBlur}  
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     />
   );
 };
