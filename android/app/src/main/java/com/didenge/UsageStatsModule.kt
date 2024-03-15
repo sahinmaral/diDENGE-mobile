@@ -2,6 +2,7 @@ package com.didenge
 
 import android.app.AppOpsManager
 import android.app.AppOpsManager.OPSTR_GET_USAGE_STATS
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -37,35 +38,77 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
 
     @NonNull
     override fun getName(): String {
-        return "UsageStatsModule"
+        return "UsageStats"
     }
 
     @ReactMethod
     fun getUsageStats(startTime: Double, endTime: Double, promise: Promise) {
-        val packageManager: PackageManager = reactContext!!.packageManager
-        val result: WritableMap = WritableNativeMap()
+        val context: Context = reactApplicationContext
+        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-        Log.d("UsageStats", "StartTime: $startTime, EndTime: $endTime")
+        val usageTimeOfApps: MutableMap<String, Long> = HashMap()
 
-        val usageStatsManager =
-                reactContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val queryUsageStats : List<UsageStats> = usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                startTime.toLong(),
-                endTime.toLong()
-        )
 
-        for (us in queryUsageStats) {
-            if (us.totalTimeInForeground > 0) {
-                val usageStats: WritableMap = WritableNativeMap()
-                usageStats.putString("packageName", us.packageName)
-                val totalTimeInSeconds = us.totalTimeInForeground / 1000
-                usageStats.putDouble("totalTimeInForeground", totalTimeInSeconds.toDouble())
-                result.putMap(us.packageName, usageStats)
+        usageTimeOfApps["com.whatsapp"] = 0L
+        usageTimeOfApps["com.instagram.android"] = 0L
+        usageTimeOfApps["com.facebook.katana"] = 0L
+        usageTimeOfApps["com.twitter.android"] = 0L
+        usageTimeOfApps["com.snapchat.android"] = 0L
+        usageTimeOfApps["com.linkedin.android"] = 0L
+        usageTimeOfApps["com.google.android.youtube"] = 0L
+        usageTimeOfApps["org.telegram.messenger"] = 0L
+        usageTimeOfApps["tv.twitch.android.app"] = 0L
+        usageTimeOfApps["com.pinterest"] = 0L
+        usageTimeOfApps["com.zhiliaoapp.musically"] = 0L
+
+        val prev: MutableMap<String, Long> = HashMap()
+        prev["com.whatsapp"] = -1L
+        prev["com.instagram.android"] = -1L
+        prev["com.facebook.katana"] = -1L
+        prev["com.twitter.android"] = -1L
+        prev["com.snapchat.android"] = -1L
+        prev["com.linkedin.android"] = -1L
+        prev["com.google.android.youtube"] = -1L
+        prev["org.telegram.messenger"] = -1L
+        prev["tv.twitch.android.app"] = -1L
+        prev["com.pinterest"] = -1L
+        prev["com.zhiliaoapp.musically"] = -1L
+
+
+
+        val usageEvents: UsageEvents = usageStatsManager.queryEvents(startTime.toLong(), endTime.toLong())
+        usageStatsManager.queryAndAggregateUsageStats(startTime.toLong(), endTime.toLong())
+        while (usageEvents.hasNextEvent()) {
+            val event = UsageEvents.Event()
+            usageEvents.getNextEvent(event)
+            val currPackageName = event.packageName
+            if (usageTimeOfApps.containsKey(currPackageName)) {
+                if (event.eventType == 1) {
+                    prev[currPackageName] = event.timeStamp
+                } else if (event.eventType == 2 && prev.containsKey(currPackageName) && prev[currPackageName] != -1L) {
+                    val time = usageTimeOfApps[currPackageName]!! + (event.timeStamp - prev[currPackageName]!!)
+                    usageTimeOfApps[currPackageName] = time
+                }
             }
         }
 
-        promise.resolve(result)
+        return promise.resolve(convertMapToWritableMap(usageTimeOfApps))
+    }
+
+    private fun convertMapToWritableMap(map: Map<String, Long>): WritableMap? {
+        val result: WritableMap = WritableNativeMap()
+
+        for (us in map) {
+            if (us.value > 0) {
+                val usageStats: WritableMap = WritableNativeMap()
+                usageStats.putString("packageName", us.key)
+                val totalTimeInSeconds = us.value / 1000
+                usageStats.putDouble("totalTimeInForeground", totalTimeInSeconds.toDouble())
+                result.putMap(us.key, usageStats)
+            }
+        }
+
+        return result
     }
 
     private fun packageExists(packageName: String): Boolean {
