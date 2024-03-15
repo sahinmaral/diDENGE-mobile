@@ -1,15 +1,19 @@
 import Container from "../../components/Container/Container";
 import defaultUserImage from "../../../assets/default-user.png";
 import { View, Text, Pressable, Image } from "react-native";
-import WebView from "react-native-webview";
-import todayResultGraph from "../../charts/todayResult/index.html";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import getTodayResultGraphJsCode from "./TodayResultGraphJsCode";
+import ChartLoader from "../../components/ChartLoader";
 
 function Homepage({ updateCurrentScreen }) {
   useEffect(() => {
     updateCurrentScreen("Homepage");
+  }, []);
+
+  const todayResultGraphJsCode = useMemo(() => {
+    return getTodayResultGraphJsCode(120, 30);
   }, []);
 
   return (
@@ -32,7 +36,7 @@ function Homepage({ updateCurrentScreen }) {
         </View>
       </View>
 
-      <View className="my-2 space-y-2 flex-[2]">
+      <View className="my-2 space-y-2 flex-[3]">
         <View>
           <Text className="text-white text-[18px] font-medium">Özet</Text>
           <Text className="text-white">
@@ -45,7 +49,7 @@ function Homepage({ updateCurrentScreen }) {
         </View>
       </View>
 
-      <View className="my-2 flex-[1.5]">
+      <View className="my-2 flex-[2]">
         <View>
           <Text className="text-white text-[18px] font-medium">Günün Sözü</Text>
           <Text className="text-white">Günün Sözü</Text>
@@ -64,19 +68,34 @@ function Homepage({ updateCurrentScreen }) {
         </View>
       </View>
 
-      <View className="space-y-2 my-2 flex-[8.5]">
+      <View className="space-y-2 my-2 flex-[9]">
         <View className="flex-[1]">
           <Text className="text-white text-[18px] font-medium">
             Bugünün Sonuçları
           </Text>
         </View>
 
-        <View className="flex-[8]">
-          <WebView source={todayResultGraph} />
+        <View className="flex-[7]">
+          <ChartLoader
+            customClassName="flex-1"
+            chartJsCode={todayResultGraphJsCode}
+          />
         </View>
 
-        <View className="flex-[1] items-end">
-          <Text className="underline text-saffronMango">Detayı Göster</Text>
+        <View className="flex-[1] flex-row justify-between">
+          <View className="flex-[1] flex-col">
+            <View className="flex flex-row gap-x-2 items-center">
+              <View className="w-[15] h-[15] rounded-full bg-[#0077B6]"></View>
+              <Text className="text-white">Kullanılan</Text>
+            </View>
+            <View className="flex flex-row gap-x-2 items-center">
+              <View className="w-[15] h-[15] rounded-full bg-[#EDF7F6]"></View>
+              <Text className="text-white">Kalan</Text>
+            </View>
+          </View>
+          <View className="flex-[1] items-end justify-center">
+            <Text className="underline text-saffronMango">Detayı Göster</Text>
+          </View>
         </View>
       </View>
     </Container>
