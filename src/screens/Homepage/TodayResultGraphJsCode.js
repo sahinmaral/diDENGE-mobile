@@ -1,30 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <style>
-      html,
-      body {
-        background-color: #2660a4;
-        overflow: hidden;
-      }
-
-      #container {
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: -80px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="container"></div>
-
-    <script>
-      Highcharts.setOptions({
+const getTodayResultGraphJsCode = (total, spent) => {
+  return `
+    Highcharts.setOptions({
         colors: ["#0077B6", "#EDF7F6"],
       });
       Highcharts.chart("container", {
@@ -39,8 +15,9 @@
           enabled: false,
         },
         title: {
-          text: "80%",
-          y: 170,
+          text: "${Math.ceil((spent / total) * 100)}%",
+          y: 0,
+          verticalAlign:'middle',
           style: {
             color: "white",
             fontWeight: "bold",
@@ -48,8 +25,9 @@
           },
         },
         subtitle: {
-          text: "20 dakika kaldı",
-          y: 200,
+          verticalAlign:'middle',
+          y: 30,
+          text: "${total - spent} dakika kaldı",
           style: {
             color: "white",
             fontWeight: "bold",
@@ -57,15 +35,7 @@
           },
         },
         legend: {
-          enabled: true,
-          x: 0,
-          y: -40,
-          layout: "vertical",
-          itemStyle: {
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "15px",
-          },
+          enabled: false,
         },
         tooltip: {
           headerFormat: "",
@@ -73,6 +43,7 @@
         },
         plotOptions: {
           pie: {
+            size: '120%',
             allowPointSelect: false,
             cursor: "pointer",
             dataLabels: {
@@ -80,7 +51,6 @@
             },
             showInLegend: true,
             borderColor: "transparent",
-            size: "110%",
           },
         },
         credits: {
@@ -88,22 +58,23 @@
         },
         series: [
           {
-            name: "Sonuç",
+            name: "",
             colorByPoint: true,
             innerSize: "85%",
             data: [
               {
                 name: "Kullanılan",
-                y: 48,
+                y: ${spent},
               },
               {
                 name: "Kalan",
-                y: 12,
+                y: ${total - spent},
               },
             ],
           },
         ],
       });
-    </script>
-  </body>
-</html>
+    `
+}
+
+export default getTodayResultGraphJsCode

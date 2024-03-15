@@ -17,7 +17,7 @@ function MyProgressSwitchButtons({
       </Pressable>
 
       <View className="flex-[2] items-center">
-        <Text className="text-white text-2xl font-medium">
+        <Text className="text-white text-xl font-medium text-center">
           {myProgressPage.header}
         </Text>
       </View>
