@@ -7,6 +7,7 @@ import App from './App';
 import { name as appName } from './app.json';
 import PushNotification, { Importance } from 'react-native-push-notification';
 
+
 AppRegistry.registerComponent(appName, () => App);
 
 PushNotification.configure({
