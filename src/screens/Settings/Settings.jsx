@@ -17,7 +17,10 @@ function Settings({ updateCurrentScreen }) {
       <GoBackButton navigation={navigation} header="Ayarlar" />
       <View className="flex-[6]">
         <MenuItem header="Dil" subHeader="Türkçe" onPress={() => {}} />
-        <MenuItem header="Profilim" onPress={() => {}} />
+        <MenuItem
+          header="Profilim"
+          onPress={() => navigation.navigate("MyProfile")}
+        />
         <MenuItem
           header="Sesli Bildirim"
           subHeader="Aktif"

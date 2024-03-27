@@ -1,16 +1,25 @@
 import Container from "../../components/Container/Container";
 import defaultUserImage from "../../../assets/default-user.png";
-import { View, Text, Pressable, Image, NativeModules } from "react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  NativeModules,
+  BackHandler,
+} from "react-native";
+import { useCallback, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import getTodayResultGraphJsCode from "./TodayResultGraphJsCode";
 import ChartLoader from "../../components/ChartLoader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../redux/slices/authSlice";
 import moment from "moment-timezone";
 import { getTotalSpentTimeOfSocialMediaApplications } from "../../utils/UsageStatsParser";
 import WordOfTheDay from "./WordOfTheDay";
+import { setModalContent } from "../../redux/slices/modalSlice";
+import ModalContentTypes from "../../enums/ModalContentTypes";
 
 const { UsageStats } = NativeModules;
 
@@ -19,9 +28,25 @@ function Homepage({ updateCurrentScreen }) {
 
   const [totalSpentTime, setTotalSpentTime] = useState(46);
 
+  const dispatch = useDispatch();
+
+  const handleHardwareBackPress = () => {
+    dispatch(setModalContent(ModalContentTypes.VerifyCloseApp));
+
+    return true;
+  };
+
   useEffect(() => {
+    BackHandler.addEventListener("hardwareBackPress", handleHardwareBackPress);
     updateCurrentScreen("Homepage");
     getSpentTimeOfAllSocialMediaApplication();
+
+    return () => {
+      BackHandler.removeEventListener(
+        "hardwareBackPress",
+        handleHardwareBackPress
+      );
+    };
   }, []);
 
   const getSpentTimeOfAllSocialMediaApplication = async () => {
@@ -40,10 +65,7 @@ function Homepage({ updateCurrentScreen }) {
   };
 
   const getTodayResultGraph = useCallback(() => {
-    return getTodayResultGraphJsCode(
-      user.addictionLevel.dailyLimit,
-      totalSpentTime
-    );
+    return getTodayResultGraphJsCode(90, totalSpentTime);
   }, [totalSpentTime]);
 
   return (
