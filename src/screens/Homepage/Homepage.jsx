@@ -24,10 +24,6 @@ function Homepage({ updateCurrentScreen }) {
     getSpentTimeOfAllSocialMediaApplication();
   }, []);
 
-  useEffect(() => {
-    getSpentTimeOfAllSocialMediaApplication();
-  }, []);
-
   const getSpentTimeOfAllSocialMediaApplication = async () => {
     const currentTime = moment.tz("Europe/Istanbul");
 
