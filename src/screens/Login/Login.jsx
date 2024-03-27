@@ -23,6 +23,7 @@ import useSpinAnimation from "../../hooks/useSpinAnimation";
 import {
   fetchLoginUser,
   fetchGetRandomWordOfTheDay,
+  fetchGetAddictionLevelByUserId,
 } from "../../services/APIService";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/slices/authSlice";
@@ -75,16 +76,21 @@ function Login({ navigation }) {
         fetchGetRandomWordOfTheDay(),
       ]);
 
-      const loggedInUserData = loginResult.data;
-      const randomWordOfTheDay = fetchRandomWordOfTheDayResult.data.content;
+      const { data: loggedInUserData } = loginResult;
+      const { data: randomWordOfTheDay } = fetchRandomWordOfTheDayResult;
+
+      const { data: userAddictionLevelData } =
+        await fetchGetAddictionLevelByUserId(loggedInUserData.id);
+
+      dispatch(
+        setUser({ ...loggedInUserData, addictionLevel: userAddictionLevelData })
+      );
+      dispatch(setWordOfTheDay(randomWordOfTheDay.content));
 
       toast.show("Başarılı bir şekilde giriş yaptınız", {
         type: "success",
         placement: "top",
       });
-
-      dispatch(setUser(loggedInUserData));
-      dispatch(setWordOfTheDay(randomWordOfTheDay));
 
       if (loggedInUserData.isNewUser) {
         const hasPermissionOfUsageStats = await UsageStats.checkForPermission();

@@ -20,6 +20,12 @@ const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
   );
 };
 
+const fetchGetAddictionLevelByUserId = async (userId) => {
+  return axios.get(
+    `http://localhost:5178/api/AddictionLevels/GetByUserId/${userId}`
+  );
+};
+
 const fetchGetRandomWordOfTheDay = async () => {
   return axios.get("http://localhost:5178/api/WordOfTheDays/GetByRandom");
 };
@@ -27,6 +33,7 @@ const fetchGetRandomWordOfTheDay = async () => {
 export {
   fetchRegisterUser,
   fetchLoginUser,
+  fetchGetAddictionLevelByUserId,
   fetchSaveAddictionLevelOfUser,
   fetchGetRandomWordOfTheDay,
 };
