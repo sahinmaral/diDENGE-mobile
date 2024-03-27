@@ -21,6 +21,7 @@ function Homepage({ updateCurrentScreen }) {
 
   useEffect(() => {
     updateCurrentScreen("Homepage");
+    getSpentTimeOfAllSocialMediaApplication();
   }, []);
 
   useEffect(() => {
