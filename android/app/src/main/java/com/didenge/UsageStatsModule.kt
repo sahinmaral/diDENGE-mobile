@@ -57,7 +57,6 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
         usageTimeOfApps["com.linkedin.android"] = 0L
         usageTimeOfApps["com.google.android.youtube"] = 0L
         usageTimeOfApps["org.telegram.messenger"] = 0L
-        usageTimeOfApps["tv.twitch.android.app"] = 0L
         usageTimeOfApps["com.pinterest"] = 0L
         usageTimeOfApps["com.zhiliaoapp.musically"] = 0L
 
@@ -70,7 +69,6 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
         prev["com.linkedin.android"] = -1L
         prev["com.google.android.youtube"] = -1L
         prev["org.telegram.messenger"] = -1L
-        prev["tv.twitch.android.app"] = -1L
         prev["com.pinterest"] = -1L
         prev["com.zhiliaoapp.musically"] = -1L
 

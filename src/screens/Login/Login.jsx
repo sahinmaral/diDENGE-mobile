@@ -6,6 +6,7 @@ import {
   View,
   Image,
   Animated,
+  NativeModules,
 } from "react-native";
 import logo from "../../../assets/logo.png";
 import facebook from "../../../assets/facebook.png";
@@ -19,9 +20,15 @@ import LoginUserSchema from "../../schemas/LoginUserSchema";
 import translatedErrorMessages from "../../locale";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../hooks/useSpinAnimation";
-import { fetchLoginUser } from "../../services/APIService";
+import {
+  fetchLoginUser,
+  fetchGetRandomWordOfTheDay,
+} from "../../services/APIService";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/slices/authSlice";
+import { setWordOfTheDay } from "../../redux/slices/appSlice";
+
+const { UsageStats } = NativeModules;
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
@@ -60,22 +67,32 @@ function Login({ navigation }) {
 
   const handleSubmit = async (values) => {
     try {
-      const loginResult = await fetchLoginUser({
-        userNameOrEmail: values.email,
-        password: values.password,
-      });
+      const [loginResult, fetchRandomWordOfTheDayResult] = await Promise.all([
+        fetchLoginUser({
+          userNameOrEmail: values.email,
+          password: values.password,
+        }),
+        fetchGetRandomWordOfTheDay(),
+      ]);
+
+      const loggedInUserData = loginResult.data;
+      const randomWordOfTheDay = fetchRandomWordOfTheDayResult.data.content;
 
       toast.show("Başarılı bir şekilde giriş yaptınız", {
         type: "success",
         placement: "top",
       });
 
-      const loggedInUserData = loginResult.data;
-
       dispatch(setUser(loggedInUserData));
+      dispatch(setWordOfTheDay(randomWordOfTheDay));
 
       if (loggedInUserData.isNewUser) {
-        navigation.navigate("CheckPermissionForNewUser");
+        const hasPermissionOfUsageStats = await UsageStats.checkForPermission();
+        if (hasPermissionOfUsageStats)
+          navigation.navigate(
+            "ExplanationOfSocialMediaAddictiveLevelIdentification"
+          );
+        else navigation.navigate("CheckPermissionForNewUser");
       } else {
         navigation.navigate("App");
       }
