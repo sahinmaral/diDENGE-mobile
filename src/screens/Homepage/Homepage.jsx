@@ -19,11 +19,8 @@ function Homepage({ updateCurrentScreen }) {
 
   const [totalSpentTime, setTotalSpentTime] = useState(46);
 
-  // useEffect(() => {
-  //   updateCurrentScreen("Homepage");
-  // }, []);
-
   useEffect(() => {
+    updateCurrentScreen("Homepage");
     getSpentTimeOfAllSocialMediaApplication();
   }, []);
 
