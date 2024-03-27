@@ -1,20 +1,53 @@
 import Container from "../../components/Container/Container";
 import defaultUserImage from "../../../assets/default-user.png";
-import { View, Text, Pressable, Image } from "react-native";
-import { useEffect, useMemo } from "react";
+import { View, Text, Pressable, Image, NativeModules } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import getTodayResultGraphJsCode from "./TodayResultGraphJsCode";
 import ChartLoader from "../../components/ChartLoader";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/slices/authSlice";
+import moment from "moment-timezone";
+import { getTotalSpentTimeOfSocialMediaApplications } from "../../utils/UsageStatsParser";
+import WordOfTheDay from "./WordOfTheDay";
+
+const { UsageStats } = NativeModules;
 
 function Homepage({ updateCurrentScreen }) {
+  const user = useSelector(selectUser);
+
+  const [totalSpentTime, setTotalSpentTime] = useState(46);
+
+  // useEffect(() => {
+  //   updateCurrentScreen("Homepage");
+  // }, []);
+
   useEffect(() => {
-    updateCurrentScreen("Homepage");
+    getSpentTimeOfAllSocialMediaApplication();
   }, []);
 
-  const todayResultGraphJsCode = useMemo(() => {
-    return getTodayResultGraphJsCode(120, 30);
-  }, []);
+  const getSpentTimeOfAllSocialMediaApplication = async () => {
+    const currentTime = moment.tz("Europe/Istanbul");
+
+    const todayTime = currentTime.clone().startOf("day");
+
+    const allStats = await UsageStats.getUsageStats(
+      todayTime.valueOf(),
+      currentTime.valueOf()
+    );
+
+    const totalSpentTime = getTotalSpentTimeOfSocialMediaApplications(allStats);
+    const roundedTotalSpendTime = totalSpentTime % 60;
+    setTotalSpentTime(roundedTotalSpendTime);
+  };
+
+  const getTodayResultGraph = useCallback(() => {
+    return getTodayResultGraphJsCode(
+      user.addictionLevel.dailyLimit,
+      totalSpentTime
+    );
+  }, [totalSpentTime]);
 
   return (
     <Container customClasses="px-4">
@@ -49,12 +82,7 @@ function Homepage({ updateCurrentScreen }) {
         </View>
       </View>
 
-      <View className="my-2 flex-[2]">
-        <View>
-          <Text className="text-white text-[18px] font-medium">Günün Sözü</Text>
-          <Text className="text-white">Günün Sözü</Text>
-        </View>
-      </View>
+      <WordOfTheDay />
 
       <View className="my-2 space-y-2 flex-[1]">
         <View>
@@ -78,7 +106,7 @@ function Homepage({ updateCurrentScreen }) {
         <View className="flex-[7]">
           <ChartLoader
             customClassName="flex-1"
-            chartJsCode={todayResultGraphJsCode}
+            chartJsCode={getTodayResultGraph()}
           />
         </View>
 

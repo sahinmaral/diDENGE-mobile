@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import logo from "../../../assets/logo.png";
 import Container from "../../components/Container/Container";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import DatePicker from "react-native-date-picker";
 import { useEffect, useState } from "react";
-import moment from "moment-js";
+import moment from "moment";
 import { fetchRegisterUser } from "../../services/APIService";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
