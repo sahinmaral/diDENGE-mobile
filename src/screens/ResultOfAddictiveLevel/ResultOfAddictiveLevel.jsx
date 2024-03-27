@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import Container from "../../components/Container/Container";
-import { BackHandler, Image, Pressable, Text, View } from "react-native";
+import { BackHandler, Pressable, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ResultOfAddictiveLevelLogo from "../../../assets/result-of-addictive-level.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
