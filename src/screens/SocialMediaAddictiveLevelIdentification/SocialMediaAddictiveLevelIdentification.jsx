@@ -7,7 +7,7 @@ import SocialMediaAddictiveLevelQuestionAnswers from "../../enums/SocialMediaAdd
 import QuestionMove from "../../enums/QuestionMove";
 import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { fetchSaveAddictionLevelOfUser } from "../../services/APIService";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import LottieView from "lottie-react-native";
 import { BlurView } from "@react-native-community/blur";
 import { useToast } from "react-native-toast-notifications";
@@ -15,6 +15,8 @@ import { setUser } from "../../redux/slices/authSlice";
 
 function SocialMediaAddictiveLevelIdentification({ navigation }) {
   const { user } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
 
   const toast = useToast();
 
@@ -77,6 +79,13 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
       )
         .then((response) => {
           const savedAddictionLevelData = response.data;
+
+          dispatch(
+            setUser({
+              ...user,
+              addictionLevel: savedAddictionLevelData.addictionLevel,
+            })
+          );
 
           navigation.navigate("ResultOfAddictiveLevel", {
             dailyLimit: savedAddictionLevelData.addictionLevel.dailyLimit,
