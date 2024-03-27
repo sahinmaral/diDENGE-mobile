@@ -12,6 +12,7 @@ import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
 import CheckPermissionForNewUser from "./src/screens/CheckPermissionForNewUser/CheckPermissionForNewUser";
 import ExplanationOfSocialMediaAddictiveLevelIdentification from "./src/screens/SocialMediaAddictiveLevelIdentification/ExplanationOfSocialMediaAddictiveLevelIdentification";
+import { default as ModalNavigator } from "./src/components/CustomModal/Navigator";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -49,6 +50,7 @@ export default function App() {
               component={ResultOfAddictiveLevel}
             />
           </Stack.Navigator>
+          <ModalNavigator />
         </NavigationContainer>
       </ToastProvider>
     </Provider>
