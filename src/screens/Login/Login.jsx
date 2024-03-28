@@ -146,7 +146,7 @@ function Login({ navigation }) {
                 onChangeText={formik.handleChange("password")}
                 onBlur={formik.handleBlur("password")}
                 value={formik.values.password}
-                secureTextEntry={securePassword.password}
+                secureTextEntry={securePassword}
               />
               <Pressable
                 onPress={togglePasswordVisibility}
