@@ -36,7 +36,7 @@ const DropdownComponent = () => {
       renderRightIcon={() => (
         <FontAwesomeIcon
           style={styles.icon}
-          name={isFocused ? faChevronUp : faChevronDown}
+          icon={isFocused ? faChevronUp : faChevronDown}
           size={15}
         />
       )}
