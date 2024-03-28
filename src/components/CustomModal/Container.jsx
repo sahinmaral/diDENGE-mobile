@@ -11,7 +11,7 @@ function Container({ children, handleCloseModal }) {
           <FontAwesomeIcon icon={faXmark} size={40} />
         </TouchableOpacity>
       </View>
-      <View className="bg-white px-4">{children}</View>
+      <View className="bg-white p-4">{children}</View>
     </View>
   );
 }
