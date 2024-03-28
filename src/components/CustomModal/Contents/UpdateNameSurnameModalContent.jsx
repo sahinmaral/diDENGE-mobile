@@ -101,7 +101,7 @@ function UpdateNameSurnameModalContent() {
 
   return (
     <View className="gap-y-2">
-      <Text className="text-black font-medium text-xl justify-center py-2 px-5">
+      <Text className="text-black font-medium text-xl justify-center py-2">
         Ad Soyad Bilgilerini Güncelle
       </Text>
       <TextInput

@@ -20,6 +20,18 @@ const fetchUpdateNameSurname = async (values, userId, accessToken) => {
   );
 };
 
+const fetchUpdatePassword = async (values, userId, accessToken) => {
+  const config = {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  };
+
+  return axios.put(
+    `http://localhost:5178/api/Users/UpdatePassword/${userId}`,
+    values,
+    config
+  );
+};
+
 const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -44,6 +56,7 @@ const fetchGetRandomWordOfTheDay = async () => {
 
 export {
   fetchUpdateNameSurname,
+  fetchUpdatePassword,
   fetchRegisterUser,
   fetchLoginUser,
   fetchGetAddictionLevelByUserId,
