@@ -8,7 +8,7 @@ import {
   NativeModules,
   BackHandler,
 } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import getTodayResultGraphJsCode from "./TodayResultGraphJsCode";
@@ -20,11 +20,14 @@ import { getTotalSpentTimeOfSocialMediaApplications } from "../../utils/UsageSta
 import WordOfTheDay from "./WordOfTheDay";
 import { setModalContent } from "../../redux/slices/modalSlice";
 import ModalContentTypes from "../../enums/ModalContentTypes";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 const { UsageStats } = NativeModules;
 
 function Homepage({ updateCurrentScreen }) {
   const user = useSelector(selectUser);
+
+  const navigation = useNavigation();
 
   const [totalSpentTime, setTotalSpentTime] = useState(46);
 
@@ -37,17 +40,22 @@ function Homepage({ updateCurrentScreen }) {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener("hardwareBackPress", handleHardwareBackPress);
     updateCurrentScreen("Homepage");
     getSpentTimeOfAllSocialMediaApplication();
+  }, []);
 
-    return () => {
-      BackHandler.removeEventListener(
+  useFocusEffect(
+    useCallback(() => {
+      const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
         handleHardwareBackPress
       );
-    };
-  }, []);
+
+      return () => {
+        backHandler.remove();
+      };
+    }, [])
+  );
 
   const getSpentTimeOfAllSocialMediaApplication = async () => {
     const currentTime = moment.tz("Europe/Istanbul");
@@ -65,8 +73,19 @@ function Homepage({ updateCurrentScreen }) {
   };
 
   const getTodayResultGraph = useCallback(() => {
-    return getTodayResultGraphJsCode(90, totalSpentTime);
+    return getTodayResultGraphJsCode(
+      user.addictionLevel.dailyLimit,
+      totalSpentTime
+    );
   }, [totalSpentTime]);
+
+  const userFullName = useMemo(() => {
+    if (user.middleName) {
+      return `${user.firstName} ${user.middleName} ${user.lastName}`;
+    } else {
+      return `${user.firstName} ${user.lastName}`;
+    }
+  }, [user]);
 
   return (
     <Container customClasses="px-4">
@@ -76,13 +95,16 @@ function Homepage({ updateCurrentScreen }) {
           <View>
             <Text className="text-saffronMango">Hoşgeldin</Text>
             <Text className="text-white text-[18px] font-medium">
-              Ebubekir Sıddık
+              {userFullName}
             </Text>
           </View>
         </View>
 
         <View>
-          <Pressable className="bg-saffronMango h-[60px] w-[60px] rounded-full items-center justify-center">
+          <Pressable
+            className="bg-saffronMango h-[60px] w-[60px] rounded-full items-center justify-center"
+            onPress={() => navigation.navigate("MyProfile")}
+          >
             <FontAwesomeIcon icon={faMagnifyingGlass} size={24} color="black" />
           </Pressable>
         </View>
