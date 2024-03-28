@@ -3,9 +3,11 @@ import GoBackButton from "../../components/GoBackButton";
 import { View, Text, Image } from "react-native";
 import MenuItem from "../../components/MenuItem/MenuItem";
 import defaultUserImage from "../../../assets/default-user.png";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setModalContent } from "../../redux/slices/modalSlice";
 import ModalContentTypes from "../../enums/ModalContentTypes";
+import { selectUser } from "../../redux/slices/authSlice";
+import { useMemo } from "react";
 
 function MyProfile({ navigation }) {
   const dispatch = useDispatch();
@@ -14,16 +16,24 @@ function MyProfile({ navigation }) {
     dispatch(setModalContent(modalContent));
   };
 
+  const user = useSelector(selectUser);
+
+  const userFullName = useMemo(() => {
+    if (user.middleName) {
+      return `${user.firstName} ${user.middleName} ${user.lastName}`;
+    } else {
+      return `${user.firstName} ${user.lastName}`;
+    }
+  }, [user]);
+
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="Profilim" />
       <View className="flex-[1] flex-row gap-x-5 items-center">
         <Image source={defaultUserImage} className="w-[80px] h-[80px]" />
         <View className="flex flex-col">
-          <Text className="text-xl text-white font-medium">
-            Ebubekir Sıddık
-          </Text>
-          <Text className="text-saffronMango">ebubekirsiddik@gmail.com</Text>
+          <Text className="text-xl text-white font-medium">{userFullName}</Text>
+          <Text className="text-saffronMango">{user.email}</Text>
         </View>
       </View>
       <View className="flex-[1.5]"></View>
