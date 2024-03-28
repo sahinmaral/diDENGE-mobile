@@ -8,6 +8,9 @@ import UpdateNameSurnameModalContent from "./Contents/UpdateNameSurnameModalCont
 import UpdatePasswordModalContent from "./Contents/UpdatePasswordModalContent";
 import UpdateProfileImageModalContent from "./Contents/UpdateProfileImageModalContent";
 import VerifyCloseAppModalContent from "./Contents/VerifyExitAppModalContent";
+import CloseFocusModeModalContent from "./Contents/CloseFocusModeModalContent";
+import ToggleNotificationSound from "./Contents/ToggleNotificationSoundModalContent";
+import SetFocusMode from "./Contents/SetFocusModeModalContent";
 
 function Navigator() {
   const modalProperties = useSelector(selectModal);
@@ -28,6 +31,12 @@ function Navigator() {
         return <UpdateProfileImageModalContent />;
       case ModalContentTypes.VerifyCloseApp:
         return <VerifyCloseAppModalContent />;
+      case ModalContentTypes.CloseFocusMode:
+        return <CloseFocusModeModalContent />;
+      case ModalContentTypes.ToggleNotificationSound:
+        return <ToggleNotificationSound />
+      case ModalContentTypes.SetFocusMode:
+        return <SetFocusMode />
       default:
         return null;
     }

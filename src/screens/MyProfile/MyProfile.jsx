@@ -54,6 +54,25 @@ function MyProfile({ navigation }) {
             handlePressMenuItem(ModalContentTypes.UpdateProfileImage)
           }
         />
+        
+        <MenuItem
+          header="Odak Mod Kapat"
+          onPress={() =>
+            handlePressMenuItem(ModalContentTypes.CloseFocusMode)
+          }
+        />
+        <MenuItem
+          header="Sesli Bidilrim Kapat"
+          onPress={() =>
+            handlePressMenuItem(ModalContentTypes.ToggleNotificationSound)
+          }
+        />
+        <MenuItem
+          header="Odak Modu Ayarla"
+          onPress={() =>
+            handlePressMenuItem(ModalContentTypes.SetFocusMode)
+          }
+        />
       </View>
     </Container>
   );
