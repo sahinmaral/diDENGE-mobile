@@ -87,11 +87,22 @@ function Homepage({ updateCurrentScreen }) {
     }
   }, [user]);
 
+  const userProfileImage = useMemo(() => {
+    return user.profilePhotoURL
+      ? {
+          uri: `https://res.cloudinary.com/sahinmaral/${user.profilePhotoURL}`,
+        }
+      : defaultUserImage;
+  }, [user]);
+
   return (
     <Container customClasses="px-4">
       <View className="flex flex-row justify-between items-center my-2 flex-[2]">
         <View className="flex flex-row items-center space-x-4">
-          <Image source={defaultUserImage} className="w-[60px] h-[60px]" />
+          <Image
+            source={userProfileImage}
+            className="w-[60px] h-[60px] rounded-full"
+          />
           <View>
             <Text className="text-saffronMango">Hoşgeldin</Text>
             <Text className="text-white text-[18px] font-medium">

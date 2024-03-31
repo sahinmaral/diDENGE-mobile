@@ -32,6 +32,34 @@ const fetchUpdatePassword = async (values, userId, accessToken) => {
   );
 };
 
+const fetchUpdateProfileImage = async (values, userId, accessToken) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "multipart/form-data",
+    },
+  };
+
+  return axios.put(
+    `http://localhost:5178/api/Users/UpdateProfileImage/${userId}`,
+    values,
+    config
+  );
+};
+
+const fetchDeleteProfileImage = async (userId, accessToken) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+
+  return axios.delete(
+    `http://localhost:5178/api/Users/DeleteProfileImage/${userId}`,
+    config
+  );
+};
+
 const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -57,6 +85,8 @@ const fetchGetRandomWordOfTheDay = async () => {
 export {
   fetchUpdateNameSurname,
   fetchUpdatePassword,
+  fetchUpdateProfileImage,
+  fetchDeleteProfileImage,
   fetchRegisterUser,
   fetchLoginUser,
   fetchGetAddictionLevelByUserId,
