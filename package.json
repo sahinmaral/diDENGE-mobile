@@ -31,6 +31,7 @@
     "react-native-calendars": "^1.1304.1",
     "react-native-date-picker": "^4.4.1",
     "react-native-element-dropdown": "^2.10.1",
+    "react-native-image-picker": "^7.1.2",
     "react-native-open-notification": "^0.1.4",
     "react-native-permissions": "^4.1.4",
     "react-native-push-notification": "^8.1.1",

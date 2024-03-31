@@ -26,11 +26,22 @@ function MyProfile({ navigation }) {
     }
   }, [user]);
 
+  const userProfileImage = useMemo(() => {
+    return user.profilePhotoURL
+      ? {
+          uri: `https://res.cloudinary.com/sahinmaral/${user.profilePhotoURL}`,
+        }
+      : defaultUserImage;
+  }, [user]);
+
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="Profilim" />
       <View className="flex-[1] flex-row gap-x-5 items-center">
-        <Image source={defaultUserImage} className="w-[80px] h-[80px]" />
+        <Image
+          source={userProfileImage}
+          className="w-[80px] h-[80px] rounded-full"
+        />
         <View className="flex flex-col">
           <Text className="text-xl text-white font-medium">{userFullName}</Text>
           <Text className="text-saffronMango">{user.email}</Text>
@@ -54,12 +65,10 @@ function MyProfile({ navigation }) {
             handlePressMenuItem(ModalContentTypes.UpdateProfileImage)
           }
         />
-        
+
         <MenuItem
           header="Odak Mod Kapat"
-          onPress={() =>
-            handlePressMenuItem(ModalContentTypes.CloseFocusMode)
-          }
+          onPress={() => handlePressMenuItem(ModalContentTypes.CloseFocusMode)}
         />
         <MenuItem
           header="Sesli Bidilrim Kapat"
@@ -69,9 +78,7 @@ function MyProfile({ navigation }) {
         />
         <MenuItem
           header="Odak Modu Ayarla"
-          onPress={() =>
-            handlePressMenuItem(ModalContentTypes.SetFocusMode)
-          }
+          onPress={() => handlePressMenuItem(ModalContentTypes.SetFocusMode)}
         />
       </View>
     </Container>
