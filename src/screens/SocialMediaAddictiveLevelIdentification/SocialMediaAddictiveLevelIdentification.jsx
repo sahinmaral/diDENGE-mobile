@@ -6,12 +6,18 @@ import AnswerButton from "./AnswerButton";
 import SocialMediaAddictiveLevelQuestionAnswers from "../../enums/SocialMediaAddictiveLevelQuestionAnswers";
 import QuestionMove from "../../enums/QuestionMove";
 import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { fetchSaveAddictionLevelOfUser } from "../../services/APIService";
+import {
+  fetchAddOrUpdateProcedurePointInformations,
+  fetchSaveAddictionLevelOfUser,
+} from "../../services/APIService";
 import { useDispatch, useSelector } from "react-redux";
 import LottieView from "lottie-react-native";
 import { BlurView } from "@react-native-community/blur";
 import { useToast } from "react-native-toast-notifications";
 import { setUser } from "../../redux/slices/authSlice";
+import {storeObject} from '../../utils/LocalStorageHelper'
+import ProcedurePointInformationSaveStatusTypes from '../../enums/ProcedurePointInformationSaveStatusTypes'
+import {getCurrentProcedurePointInformation} from '../../utils/ProcedureHelper'
 
 function SocialMediaAddictiveLevelIdentification({ navigation }) {
   const { user } = useSelector((state) => state.auth);
@@ -54,69 +60,91 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
     );
   }, [questionInformations.currentPage]);
 
-  const addPoints = (point) => {
+  const addPoints = async (point) => {
     questionInformations.totalAnsweredQuestions[
       questionInformations.currentPage
     ] = point;
-
+  
     questionInformations.currentPage++;
-
+  
     setQuestionInformations({ ...questionInformations });
-
+  
     if (isLastQuestion) {
       const grade = Object.values(
         questionInformations.totalAnsweredQuestions
       ).reduce((prev, curr) => prev + curr);
-
+  
       setIsFetchProcessing(true);
-
-      fetchSaveAddictionLevelOfUser(
-        {
+  
+      try {
+        const savedAddictionLevelResponse = await fetchSaveAddictionLevelOfUser(
+          {
+            userId: user.id,
+            grade,
+          },
+          user.accessToken
+        );
+  
+        const savedAddictionLevelData = savedAddictionLevelResponse.data;
+  
+        const procedurePointInformationsResponse = await fetchAddOrUpdateProcedurePointInformations({
           userId: user.id,
-          grade,
-        },
-        user.accessToken
-      )
-        .then((response) => {
-          const savedAddictionLevelData = response.data;
-
-          dispatch(
-            setUser({
-              ...user,
-              addictionLevel: savedAddictionLevelData.addictionLevel,
-            })
-          );
-
-          navigation.navigate("ResultOfAddictiveLevel", {
-            dailyLimit: savedAddictionLevelData.addictionLevel.dailyLimit,
-            addictionLevel: savedAddictionLevelData.addictionLevel.name,
-            userGrade: savedAddictionLevelData.grade,
-            minumumGrade: savedAddictionLevelData.addictionLevel.minimumGrade,
-            maximumGrade: savedAddictionLevelData.addictionLevel.maximumGrade,
-          });
-        })
-        .catch(async (error) => {
-          console.log(error);
-
-          toast.show(
-            "Sosyal medya bağımlılık seviyenizi kaydederken bir hata oluştu. Lütfen daha sonra tekrar deneyin",
-            {
-              type: "danger",
-              placement: "top",
-            }
-          );
-
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-
-          setUser(null);
-
-          navigation.navigate("Login");
-        })
-        .finally(() => {
-          setIsFetchProcessing(false);
         });
+  
+        const procedurePointInformationsData = procedurePointInformationsResponse.data.items;
+  
+        const currentProcedurePointInformation = getCurrentProcedurePointInformation(
+          procedurePointInformationsData
+        );
+  
+        storeObject("procedurePointInformation", {
+          all: procedurePointInformationsData,
+          current: currentProcedurePointInformation,
+          status: ProcedurePointInformationSaveStatusTypes.Lately
+        });
+  
+        dispatch(
+          setUser({
+            ...user,
+            addictionLevel: savedAddictionLevelData.addictionLevel,
+            procedurePointInformation: {
+              all: procedurePointInformationsData,
+              current: currentProcedurePointInformation,
+              status: ProcedurePointInformationSaveStatusTypes.Lately
+            },
+          })
+        );
+  
+        navigation.navigate("ResultOfAddictiveLevel", {
+          dailyLimit: savedAddictionLevelData.addictionLevel.dailyLimit,
+          addictionLevel: savedAddictionLevelData.addictionLevel.name,
+          userGrade: savedAddictionLevelData.grade,
+          minumumGrade: savedAddictionLevelData.addictionLevel.minimumGrade,
+          maximumGrade: savedAddictionLevelData.addictionLevel.maximumGrade,
+        });
+      } catch (error) {
+
+        console.log(error);
+  
+        toast.show(
+          "Sosyal medya bağımlılık seviyenizi kaydederken bir hata oluştu. Lütfen daha sonra tekrar deneyin",
+          {
+            type: "danger",
+            placement: "top",
+          }
+        );
+  
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+  
+        setUser(null);
+  
+        navigation.navigate("Login");
+      } finally {
+        setIsFetchProcessing(false);
+      }
     }
   };
+  
 
   const moveQuestion = (questionMove) => {
     switch (questionMove) {

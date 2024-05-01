@@ -82,6 +82,19 @@ const fetchGetRandomWordOfTheDay = async () => {
   return axios.get("http://localhost:5178/api/WordOfTheDays/GetByRandom");
 };
 
+const fetchGetProcedurePointInformationsByUserId = async (userId) => {
+  return axios.get(
+    `http://localhost:5178/api/Procedures/GetProcedurePointInformationsByUserId/${userId}`
+  );
+};
+
+const fetchAddOrUpdateProcedurePointInformations = async (input) => {
+  return axios.post(
+    `http://localhost:5178/api/Procedures/AddOrUpdateProcedurePointInformations`,
+    input
+  );
+};
+
 export {
   fetchUpdateNameSurname,
   fetchUpdatePassword,
@@ -89,7 +102,9 @@ export {
   fetchDeleteProfileImage,
   fetchRegisterUser,
   fetchLoginUser,
+  fetchGetProcedurePointInformationsByUserId,
   fetchGetAddictionLevelByUserId,
   fetchSaveAddictionLevelOfUser,
+  fetchAddOrUpdateProcedurePointInformations,
   fetchGetRandomWordOfTheDay,
 };

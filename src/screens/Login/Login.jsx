@@ -24,15 +24,21 @@ import {
   fetchLoginUser,
   fetchGetRandomWordOfTheDay,
   fetchGetAddictionLevelByUserId,
+  fetchGetProcedurePointInformationsByUserId,
 } from "../../services/APIService";
-import { useDispatch } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import { setUser } from "../../redux/slices/authSlice";
 import { setWordOfTheDay } from "../../redux/slices/appSlice";
+import { getCurrentProcedurePointInformation } from "../../utils/ProcedureHelper";
+import { storeObject } from "../../utils/LocalStorageHelper";
+import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
 
 const { UsageStats } = NativeModules;
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
+
+  const { user } = useSelector((state) => state.auth);
 
   const spin = useSpinAnimation();
 
@@ -52,6 +58,12 @@ function Login({ navigation }) {
   });
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (user !== null) {
+      navigation.navigate("App");
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!formik.isValid && !formik.isValidating && formik.isSubmitting) {
@@ -82,9 +94,42 @@ function Login({ navigation }) {
       const { data: userAddictionLevelData } =
         await fetchGetAddictionLevelByUserId(loggedInUserData.id);
 
-      dispatch(
-        setUser({ ...loggedInUserData, addictionLevel: userAddictionLevelData })
-      );
+      if (!loggedInUserData.isNewUser) {
+        const procedurePointInformationsResponse =
+          await fetchGetProcedurePointInformationsByUserId(loggedInUserData.id);
+
+        const procedurePointInformationsData =
+          procedurePointInformationsResponse.data.items;
+
+        const currentProcedurePointInformation =
+          getCurrentProcedurePointInformation(procedurePointInformationsData);
+
+        storeObject("procedurePointInformation", {
+          all: procedurePointInformationsData,
+          current: currentProcedurePointInformation,
+          status: ProcedurePointInformationSaveStatusTypes.Lately,
+        });
+
+        dispatch(
+          setUser({
+            ...loggedInUserData,
+            addictionLevel: userAddictionLevelData,
+            procedurePointInformation: {
+              all: procedurePointInformationsData,
+              current: currentProcedurePointInformation,
+              status: ProcedurePointInformationSaveStatusTypes.Lately,
+            },
+          })
+        );
+      } else {
+        dispatch(
+          setUser({
+            ...loggedInUserData,
+            addictionLevel: userAddictionLevelData,
+          })
+        );
+      }
+
       dispatch(setWordOfTheDay(randomWordOfTheDay.content));
 
       toast.show("Başarılı bir şekilde giriş yaptınız", {
@@ -92,17 +137,21 @@ function Login({ navigation }) {
         placement: "top",
       });
 
-      if (loggedInUserData.isNewUser) {
-        const hasPermissionOfUsageStats = await UsageStats.checkForPermission();
-        if (hasPermissionOfUsageStats)
+      const hasPermissionOfUsageStats = await UsageStats.checkForPermission();
+
+      if (!hasPermissionOfUsageStats) {
+        navigation.navigate("CheckPermissionForNewUser");
+      } else {
+        if (loggedInUserData.isNewUser) {
           navigation.navigate(
             "ExplanationOfSocialMediaAddictiveLevelIdentification"
           );
-        else navigation.navigate("CheckPermissionForNewUser");
-      } else {
-        navigation.navigate("App");
+        } else {
+          navigation.navigate("App");
+        }
       }
     } catch (error) {
+      console.log(error);
       if (error.response) {
         const { data } = error.response;
 

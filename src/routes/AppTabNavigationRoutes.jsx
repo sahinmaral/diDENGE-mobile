@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabButtonGroup from "../components/TabButtonGroup";
 import Settings from "../screens/Settings";
@@ -11,10 +11,19 @@ import ContactForm from "../screens/ContactForm";
 import CheckInternet from "../screens/CheckInternet";
 import Loading from "../screens/Loading";
 import { useNetInfo } from "@react-native-community/netinfo";
+import useExecuteBackgroundTask from "../hooks/useExecuteBackgroundTask";
+import { selectUser } from "../redux/slices/authSlice";
+import { useSelector } from "react-redux";
+import { selectSpendTimeInterval } from "../redux/slices/appSlice";
 
 function AppTabNavigatorRoutes() {
   const Stack = createNativeStackNavigator();
   const netInfoState = useNetInfo();
+
+  const user = useSelector(selectUser);
+  const spendTimeInterval = useSelector(selectSpendTimeInterval);
+
+  useExecuteBackgroundTask(user, spendTimeInterval);
 
   const [currentScreen, setCurrentScreen] = useState(null);
 

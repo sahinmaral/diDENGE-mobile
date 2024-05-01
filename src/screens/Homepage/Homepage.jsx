@@ -15,7 +15,7 @@ import getTodayResultGraphJsCode from "./TodayResultGraphJsCode";
 import ChartLoader from "../../components/ChartLoader";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../redux/slices/authSlice";
-import moment from "moment-timezone";
+import moment from "moment";
 import { getTotalSpentTimeOfSocialMediaApplications } from "../../utils/UsageStatsParser";
 import WordOfTheDay from "./WordOfTheDay";
 import { setModalContent } from "../../redux/slices/modalSlice";
@@ -29,7 +29,7 @@ function Homepage({ updateCurrentScreen }) {
 
   const navigation = useNavigation();
 
-  const [totalSpentTime, setTotalSpentTime] = useState(46);
+  const [totalSpentTime, setTotalSpentTime] = useState(0);
 
   const dispatch = useDispatch();
 
@@ -58,7 +58,7 @@ function Homepage({ updateCurrentScreen }) {
   );
 
   const getSpentTimeOfAllSocialMediaApplication = async () => {
-    const currentTime = moment.tz("Europe/Istanbul");
+    const currentTime = moment()
 
     const todayTime = currentTime.clone().startOf("day");
 
@@ -68,7 +68,7 @@ function Homepage({ updateCurrentScreen }) {
     );
 
     const totalSpentTime = getTotalSpentTimeOfSocialMediaApplications(allStats);
-    const roundedTotalSpendTime = totalSpentTime % 60;
+    const roundedTotalSpendTime = Math.floor(totalSpentTime / 60);
     setTotalSpentTime(roundedTotalSpendTime);
   };
 
