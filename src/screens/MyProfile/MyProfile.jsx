@@ -6,8 +6,9 @@ import defaultUserImage from "../../../assets/default-user.png";
 import { useDispatch, useSelector } from "react-redux";
 import { setModalContent } from "../../redux/slices/modalSlice";
 import ModalContentTypes from "../../enums/ModalContentTypes";
-import { selectUser } from "../../redux/slices/authSlice";
+import { selectUser, setUser } from "../../redux/slices/authSlice";
 import { useMemo } from "react";
+import BackgroundService from "react-native-background-actions"; 
 
 function MyProfile({ navigation }) {
   const dispatch = useDispatch();
@@ -34,6 +35,12 @@ function MyProfile({ navigation }) {
       : defaultUserImage;
   }, [user]);
 
+  const logout = async () => {
+    dispatch(setUser(null));
+    navigation.navigate("Login");
+    await BackgroundService.stop()
+  }
+
   return (
     <Container customClasses="px-4">
       <GoBackButton navigation={navigation} header="Profilim" />
@@ -47,8 +54,8 @@ function MyProfile({ navigation }) {
           <Text className="text-saffronMango">{user.email}</Text>
         </View>
       </View>
-      <View className="flex-[1.5]"></View>
-      <View className="flex-[6]">
+      <View className="flex-[0.5]"></View>
+      <View className="flex-[7]">
         <MenuItem
           header="Ad soyad bilgilerini güncelle"
           onPress={() =>
@@ -71,7 +78,7 @@ function MyProfile({ navigation }) {
           onPress={() => handlePressMenuItem(ModalContentTypes.CloseFocusMode)}
         />
         <MenuItem
-          header="Sesli Bidilrim Kapat"
+          header="Sesli Bildirim Kapat"
           onPress={() =>
             handlePressMenuItem(ModalContentTypes.ToggleNotificationSound)
           }
@@ -79,6 +86,10 @@ function MyProfile({ navigation }) {
         <MenuItem
           header="Odak Modu Ayarla"
           onPress={() => handlePressMenuItem(ModalContentTypes.SetFocusMode)}
+        />
+        <MenuItem
+          header="Çıkış Yap"
+          onPress={logout}
         />
       </View>
     </Container>
