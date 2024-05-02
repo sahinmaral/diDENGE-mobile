@@ -19,4 +19,8 @@ const getObject = async (key) => {
   return jsonValue != null ? JSON.parse(jsonValue) : null;
 };
 
-export { storeString, storeObject, getString, getObject };
+const removeItem = async (key) => {
+  await AsyncStorage.removeItem(key)
+}
+
+export { storeString, storeObject, getString, getObject,removeItem };

@@ -95,6 +95,13 @@ const fetchAddOrUpdateProcedurePointInformations = async (input) => {
   );
 };
 
+const fetchAddSocialMediaApplicationUsages = async (input) => {
+  return axios.post(
+    `http://localhost:5178/api/SocialMediaApplicationUsages`,
+    input
+  );
+};
+
 export {
   fetchUpdateNameSurname,
   fetchUpdatePassword,
@@ -107,4 +114,5 @@ export {
   fetchSaveAddictionLevelOfUser,
   fetchAddOrUpdateProcedurePointInformations,
   fetchGetRandomWordOfTheDay,
+  fetchAddSocialMediaApplicationUsages
 };
