@@ -41,57 +41,84 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
         return "UsageStats"
     }
 
+    private fun getSocialMediaAppName(packageName: String): String {
+        val socialMediaAppsMap = mapOf(
+            "com.whatsapp" to "WhatsApp",
+            "com.instagram.android" to "Instagram",
+            "com.facebook.katana" to "Facebook",
+            "com.twitter.android" to "Twitter",
+            "com.snapchat.android" to "Snapchat",
+            "com.linkedin.android" to "LinkedIn",
+            "com.google.android.youtube" to "YouTube",
+            "org.telegram.messenger" to "Telegram",
+            "com.pinterest" to "Pinterest",
+            "com.zhiliaoapp.musically" to "TikTok" 
+        )
+        return socialMediaAppsMap[packageName] ?: "Unknown App"
+    }
+
     @ReactMethod
     fun getUsageStats(startTime: Double, endTime: Double, promise: Promise) {
         val context: Context = reactApplicationContext
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
         val usageTimeOfApps: MutableMap<String, Long> = HashMap()
+        val usageCountOfApps: MutableMap<String, Int> = HashMap()
+        val prev: MutableMap<String, Long> = HashMap() // Initialize prev map
 
+        // Initialize usage time and count maps
+        val socialMediaApps = listOf(
+            "com.whatsapp", "com.instagram.android", "com.facebook.katana",
+            "com.twitter.android", "com.snapchat.android", "com.linkedin.android",
+            "com.google.android.youtube", "org.telegram.messenger", "com.pinterest",
+            "com.zhiliaoapp.musically"
+        )
 
-        usageTimeOfApps["com.whatsapp"] = 0L
-        usageTimeOfApps["com.instagram.android"] = 0L
-        usageTimeOfApps["com.facebook.katana"] = 0L
-        usageTimeOfApps["com.twitter.android"] = 0L
-        usageTimeOfApps["com.snapchat.android"] = 0L
-        usageTimeOfApps["com.linkedin.android"] = 0L
-        usageTimeOfApps["com.google.android.youtube"] = 0L
-        usageTimeOfApps["org.telegram.messenger"] = 0L
-        usageTimeOfApps["com.pinterest"] = 0L
-        usageTimeOfApps["com.zhiliaoapp.musically"] = 0L
-
-        val prev: MutableMap<String, Long> = HashMap()
-        prev["com.whatsapp"] = -1L
-        prev["com.instagram.android"] = -1L
-        prev["com.facebook.katana"] = -1L
-        prev["com.twitter.android"] = -1L
-        prev["com.snapchat.android"] = -1L
-        prev["com.linkedin.android"] = -1L
-        prev["com.google.android.youtube"] = -1L
-        prev["org.telegram.messenger"] = -1L
-        prev["com.pinterest"] = -1L
-        prev["com.zhiliaoapp.musically"] = -1L
-
-
+        for (packageName in socialMediaApps) {
+            usageTimeOfApps[packageName] = 0L
+            usageCountOfApps[packageName] = 0
+            prev[packageName] = -1L // Initialize prev for each app
+        }
 
         val usageEvents: UsageEvents = usageStatsManager.queryEvents(startTime.toLong(), endTime.toLong())
-        usageStatsManager.queryAndAggregateUsageStats(startTime.toLong(), endTime.toLong())
         while (usageEvents.hasNextEvent()) {
             val event = UsageEvents.Event()
             usageEvents.getNextEvent(event)
             val currPackageName = event.packageName
             if (usageTimeOfApps.containsKey(currPackageName)) {
                 if (event.eventType == 1) {
-                    prev[currPackageName] = event.timeStamp
-                } else if (event.eventType == 2 && prev.containsKey(currPackageName) && prev[currPackageName] != -1L) {
-                    val time = usageTimeOfApps[currPackageName]!! + (event.timeStamp - prev[currPackageName]!!)
-                    usageTimeOfApps[currPackageName] = time
+                    // Application opened
+                    val count = usageCountOfApps[currPackageName] ?: 0
+                    usageCountOfApps[currPackageName] = count + 1
+                    prev[currPackageName] = event.timeStamp // Update prev for this app
+                } else if (event.eventType == 2) {
+                    // Application closed
+                    if (prev[currPackageName] != -1L) {
+                        val time = usageTimeOfApps[currPackageName]!! + (event.timeStamp - prev[currPackageName]!!)
+                        usageTimeOfApps[currPackageName] = time
+                    }
                 }
             }
         }
 
-        return promise.resolve(convertMapToWritableMap(usageTimeOfApps))
+        val result: WritableMap = WritableNativeMap()
+
+        for (us in usageTimeOfApps) {
+            if (us.value > 0) {
+                val usageStats: WritableMap = WritableNativeMap()
+                usageStats.putString("packageName", us.key)
+                usageStats.putString("appName", getSocialMediaAppName(us.key))
+                val totalTimeInSeconds = us.value / 1000
+                val totalCount = usageCountOfApps[us.key] ?: 0
+                usageStats.putDouble("totalTimeInForeground", totalTimeInSeconds.toDouble())
+                usageStats.putInt("openCount", totalCount/2)
+                result.putMap(us.key, usageStats)
+            }
+        }
+
+        promise.resolve(result)
     }
+
 
     private fun convertMapToWritableMap(map: Map<String, Long>): WritableMap? {
         val result: WritableMap = WritableNativeMap()
