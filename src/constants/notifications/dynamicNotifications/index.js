@@ -1,5 +1,5 @@
-import DynamicNotificationTypes from "../../enums/DynamicNotificationTypes";
-import ProcedureTypes from "../../enums/ProcedureTypes";
+import DynamicNotificationTypes from "../../../enums/DynamicNotificationTypes";
+import ProcedureTypes from "../../../enums/ProcedureTypes";
 
 const dynamicNotifications = [
     {
@@ -65,17 +65,17 @@ const dynamicNotifications = [
     {
         procedure: ProcedureTypes.Admiration,
         type : DynamicNotificationTypes.AfterAllOfSpendTime,
-        message: ""
+        message: "Her adım önemlidir! Sosyal medyadan uzak durmak için attığın her adım seni hedefine yaklaştırır. Yarın da bu adımı atmaya devam et!"
     },
     {
         procedure: ProcedureTypes.Reminder,
         type : DynamicNotificationTypes.AfterAllOfSpendTime,
-        message: ""
+        message: "Kendine inan ve yapabileceğine inan! Sosyal medyadan uzak durmak için gerekli güce ve disipline sahipsin. Yarın başaracaksın!"
     },
     {
         procedure: ProcedureTypes.Warning,
         type : DynamicNotificationTypes.AfterAllOfSpendTime,
-        message: ""
+        message: "Başarıya adım adım ulaş! Sosyal medya yerine, seni başarıya götürecek adımları atmaya başla. Yarın her şeye daha hazır hissedeceksin."
     },
     {
         procedure: ProcedureTypes.Admiration,

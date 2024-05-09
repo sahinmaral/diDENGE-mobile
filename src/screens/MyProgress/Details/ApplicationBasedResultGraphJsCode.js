@@ -1,4 +1,5 @@
 const getApplicationBasedResultGraphJsCode = (categories, data) => {
+
   return `
     Highcharts.chart("container", {
         chart: {
@@ -62,7 +63,7 @@ const getApplicationBasedResultGraphJsCode = (categories, data) => {
         },
         series: ${JSON.stringify(data)},
       });
-      `
-}
+      `;
+};
 
-export default getApplicationBasedResultGraphJsCode
+export default getApplicationBasedResultGraphJsCode;

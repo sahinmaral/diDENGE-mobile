@@ -6,10 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectUser, setUser } from "../../../redux/slices/authSlice";
 import { toggleModal } from "../../../redux/slices/modalSlice";
 import defaultUserImage from "../../../../assets/default-user.png";
-import {
-  fetchDeleteProfileImage,
-  fetchUpdateProfileImage,
-} from "../../../services/APIService";
+import apiService from "../../../services/apiService";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../../hooks/useSpinAnimation";
@@ -77,7 +74,7 @@ function UpdateProfileImageModalContent() {
 
     setForm({ ...form, isSubmitting: true });
 
-    fetchUpdateProfileImage(formData, user.id, user.accessToken)
+    apiService.users.fetchUpdateProfileImage(formData, user.id, user.accessToken)
       .then((response) => {
         const newProfilePhotoURL = response.data.newProfileImagePath;
         dispatch(setUser({ ...user, profilePhotoURL: newProfilePhotoURL }));
@@ -105,7 +102,7 @@ function UpdateProfileImageModalContent() {
   const handleDeleteProfileImage = () => {
     setForm({ ...form, isSubmitting: true });
 
-    fetchDeleteProfileImage(user.id, user.accessToken)
+    apiService.users.fetchDeleteProfileImage(user.id, user.accessToken)
       .then((response) => {
         dispatch(setUser({ ...user, profilePhotoURL: null }));
 

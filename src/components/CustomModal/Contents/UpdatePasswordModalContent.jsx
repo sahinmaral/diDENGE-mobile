@@ -5,7 +5,7 @@ import useSpinAnimation from "../../../hooks/useSpinAnimation";
 import { useToast } from "react-native-toast-notifications";
 import { useFormik } from "formik";
 import UpdatePasswordSchema from "../../../schemas/UpdatePasswordSchema";
-import { fetchUpdatePassword } from "../../../services/APIService";
+import apiService from "../../../services/apiService";
 import { selectUser, setUser } from "../../../redux/slices/authSlice";
 import { toggleModal } from "../../../redux/slices/modalSlice";
 import {
@@ -50,7 +50,7 @@ function UpdatePasswordModalContent() {
       newPassword: values.newPassword,
     };
 
-    fetchUpdatePassword(sendingValues, user.id, user.accessToken)
+    apiService.users.fetchUpdatePassword(sendingValues, user.id, user.accessToken)
       .then(() => {
         toast.show(
           "İşlem başarılı. Yeni şifrenizle giriş yapmanız gerekecek.",

@@ -148,7 +148,7 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
                 }
         return true
     }
-
+    
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun showUsageAccessSettings(packageName: String) {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)

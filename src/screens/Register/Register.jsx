@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View, Image } from "react-native";
-import logo from "../../../assets/logo.png";
+import appLogo from "../../../assets/appLogo.png";
 import Container from "../../components/Container/Container";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import RegisterUserSchema from "../../schemas/RegisterUserSchema";
@@ -66,7 +66,7 @@ function Register({ navigation }) {
   return (
     <Container>
       <View className="flex-[3] justify-center items-center">
-        <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
+        <Image source={appLogo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
       <View className="px-4 flex-[5]">
         <View className="gap-4 flex-[3]">

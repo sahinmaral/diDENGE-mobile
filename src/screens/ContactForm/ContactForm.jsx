@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 import Container from "../../components/Container/Container";
-import { ScrollView, TextInput, View, Text, Pressable } from "react-native";
+import { TextInput, View, Text, Pressable } from "react-native";
 import GoBackButton from "../../components/GoBackButton";
 import DropdownComponent from "./DropdownComponent";
 

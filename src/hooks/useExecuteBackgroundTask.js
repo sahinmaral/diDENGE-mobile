@@ -1,187 +1,95 @@
-import moment from "moment";
+import { useEffect, useMemo, useRef } from "react";
 import {
-  clearLocalNotification,
-  showLocalNotification,
-} from "../utils/PushNotificationHelper";
-import {
-  getCommonNotification,
-  getDynamicNotification,
-} from "../utils/NotificationHelper";
-import { useEffect, useRef } from "react";
-import {
+  APP_NAME,
+  CLEAR_ALL_NOTIFICATION_INTERVAL,
   DAILY_LIMIT_EXCESSION_AMOUNT,
-  MAX_GRADE_INTERVAL,
-  MIN_GRADE_INTERVAL,
-  Q_LEARNING_WEIGHT_VECTOR_COEFFICIENT,
-  SOCIAL_MEDIA_SPENT_TIME_CHECK_INTERVAL,
+  PUSH_NOTIFICATION_INTERVAL,
+  getFirstPieceOfUserDailyLimitInterval,
+  getSecondPieceOfUserDailyLimitInterval,
 } from "../constants";
 import BackgroundService from "react-native-background-actions";
-import { NativeModules } from "react-native";
-import { getTotalSpentTimeOfSocialMediaApplications } from "../utils/UsageStatsParser";
-import { fetch } from "@react-native-community/netinfo";
-import { getCurrentProcedurePointInformation } from "../utils/ProcedureHelper";
-import {
-  getObject,
-  removeItem,
-  storeObject,
-} from "../utils/LocalStorageHelper";
 import ProcedurePointInformationSaveStatusTypes from "../enums/ProcedurePointInformationSaveStatusTypes";
 import { useDispatch } from "react-redux";
-import { setUser } from "../redux/slices/authSlice";
-import {
-  fetchAddOrUpdateProcedurePointInformations,
-  fetchAddSocialMediaApplicationUsages,
-} from "../services/APIService";
-import {
-  setSpendTimeInterval,
-  refreshSpendTimeInterval,
-} from "../redux/slices/appSlice";
-import DynamicNotificationTypes from "../enums/DynamicNotificationTypes";
+import { refreshSpendTimeInterval } from "../redux/slices/appSlice";
+import PushNotificationType from "../enums/PushNotificationType";
+import PushNotificationOptions from "../classes/PushNotificationOptions";
+import NetworkHandler from "../services/networkHandler";
+import apiService from "../services/apiService";
+import NotificationService from "../services/notificationService";
+import UsageStatsService from "../services/usageStatsService";
+import LocalStorageService from "../services/localStorageService";
+import backgroundServiceNotificationOptions from "../constants/notifications/backgroundServiceNotifications";
+import BeginningOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/BeginningOfSpendTimeDynamicNotificationStrategy";
+import NearlyHalfOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/NearlyHalfOfSpendTimeDynamicNotificationStrategy";
+import AfterAllOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/AfterAllOfSpendTimeDynamicNotificationStrategy";
+import NearlyAllOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/NearlyAllOfSpendTimeDynamicNotificationStrategy";
+import FailedOfObeyingSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/FailedOfObeyingSpendTimeDynamicNotificationStrategy";
+import * as LocalStorageKeys from "../constants/localStorageKeys";
+import ProcedureService from "../services/procedureService";
+import SocialMediaApplicationUsageDto from "../classes/socialMediaApplicationUsageDto";
+import AddOrUpdateProcedurePointInformationsRequestDto from "../classes/AddOrUpdateProcedurePointInformationsRequestDto";
+import AddSocialMediaApplicationUsagesRequestDto from "../classes/AddSocialMediaApplicationUsagesRequestDto";
+import { currentTime, sleep, startOfTheDay } from "../utils/timeUtils";
 
-const { UsageStats } = NativeModules;
+const notificationService = new NotificationService();
+const networkHandler = new NetworkHandler();
+const usageStatsService = new UsageStatsService();
+const localStorageService = new LocalStorageService();
+const procedureService = new ProcedureService();
 
 const useExecuteBackgroundTask = (user, spendTimeInterval) => {
-  const sleep = (time) =>
-    new Promise((resolve) => setTimeout(() => resolve(), time));
-
   const dispatch = useDispatch();
 
   const spendTimeIntervalRef = useRef(spendTimeInterval);
   const userRef = useRef(user);
 
+  const currentUser = useMemo(() => {
+    userRef.current = user;
+    return userRef.current;
+  }, [user]);
+
+  const currentSpentTimeInterval = useMemo(() => {
+    spendTimeIntervalRef.current = spendTimeInterval;
+    return spendTimeIntervalRef.current;
+  }, [spendTimeInterval]);
+
   const handleExecuteBackgroundTask = async (taskDataArguments) => {
     const { delay } = taskDataArguments;
     await new Promise(async (resolve) => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
-        const networkState = await fetch();
-
         const isNetworkConnected =
-          networkState.type !== "unknown" && networkState.isConnected;
+          await networkHandler.checkNetworkConnection();
 
-        const spendTimeStats = await getSpentTimeOfAllSocialMediaApplication();
+        const socialMediaApplicationUsagesDto =
+          await getSocialMediaApplicationUsages();
 
-        const { totalSpentTime, allStats } = spendTimeStats;
-
-        const socialMediaApplicationUsages = Object.values(allStats);
+        const socialMediaApplicationUsages = Object.values(
+          socialMediaApplicationUsagesDto.allSocialMediaApplicationUsagesDictionary
+        );
 
         await handleUpdateProcedurePointInformationAndSocialMediaApplicationUsages(
-          isNetworkConnected,
-          totalSpentTime,
+          socialMediaApplicationUsagesDto.totalSpentTimeOfSocialMediaApplicationsAsMinutes,
           socialMediaApplicationUsages
         );
 
         if (isNetworkConnected) {
-          const localProcedurePointInformation = await getObject(
-            "procedurePointInformation"
-          );
-
-          const localSocialMediaApplicationUsage = await getObject(
-            "socialMediaApplicationUsages"
-          );
-
-          const isLocalProcedurePointInformationStateMustUpdate =
-            localProcedurePointInformation.status ===
-            ProcedurePointInformationSaveStatusTypes.MustUpdate;
-
-          const isLocalSocialMediaApplicationUsagesStateExist =
-            localSocialMediaApplicationUsage !== null;
-
-          if (
-            isLocalProcedurePointInformationStateMustUpdate ||
-            isLocalSocialMediaApplicationUsagesStateExist
-          ) {
-            try {
-              showLocalNotification(
-                "2",
-                "diDENGE",
-                "Kullanım süreleriniz kaydediliyor ..."
-              );
-
-              if (isLocalProcedurePointInformationStateMustUpdate) {
-                const procedurePointInformationsResponse =
-                  await fetchAddOrUpdateProcedurePointInformations({
-                    userId: userRef.current.id,
-                    procedurePointInformations:
-                      localProcedurePointInformation.all,
-                  });
-
-                const procedurePointInformationsData =
-                  procedurePointInformationsResponse.data.items;
-
-                const currentProcedurePointInformation =
-                  getCurrentProcedurePointInformation(
-                    procedurePointInformationsData
-                  );
-
-                storeObject("procedurePointInformation", {
-                  all: procedurePointInformationsData,
-                  current: currentProcedurePointInformation,
-                  status: ProcedurePointInformationSaveStatusTypes.Lately,
-                });
-
-                dispatch(
-                  setUser({
-                    ...userRef.current,
-                    procedurePointInformation: {
-                      all: procedurePointInformationsData,
-                      current: currentProcedurePointInformation,
-                      status: ProcedurePointInformationSaveStatusTypes.Lately,
-                    },
-                  })
-                );
-              }
-              if (isLocalSocialMediaApplicationUsagesStateExist) {
-                await fetchAddSocialMediaApplicationUsages({
-                  userId: userRef.current.id,
-                  addictionLevelId: userRef.current.addictionLevel.id,
-                  socialMediaApplicationUsages,
-                });
-
-                await removeItem("socialMediaApplicationUsages");
-              }
-            } catch (error) {
-              console.log(error);
-            } finally {
-              setTimeout(() => {
-                clearLocalNotification();
-              }, 12000);
-            }
-          }
+          checkIfAnyLocalDataHasToBeUpdated();
         }
 
-        await handleSendNotification(spendTimeStats.totalSpentTime);
+        handleSendCommonNotification();
+        await handleSendDynamicNotification(totalSpentTime);
         await sleep(delay);
       }
     });
   };
 
-  const options = {
-    taskName: "SendNotificationBySpentTimeOfUser",
-    taskTitle: "diDENGE Sanal Asistan Arkaplan Servisi",
-    taskDesc:
-      "diDENGE, sosyal medya kullanımını dengelemek için arka planda çalışan bir uygulamadır.",
-    taskIcon: {
-      name: "ic_launcher",
-      type: "mipmap",
-    },
-    linkingURI: "diDENGE://",
-    parameters: {
-      delay: 1000,
-    },
-  };
-
   const checkAndStartBackgroundService = async () => {
     if (!BackgroundService.isRunning())
-      await BackgroundService.start(handleExecuteBackgroundTask, options);
+      await BackgroundService.start(
+        handleExecuteBackgroundTask,
+        backgroundServiceNotificationOptions
+      );
   };
-
-  useEffect(() => {
-    spendTimeIntervalRef.current = spendTimeInterval;
-  }, [spendTimeInterval]);
-
-  useEffect(() => {
-    userRef.current = user;
-  }, [user]);
 
   useEffect(() => {
     checkAndStartBackgroundService();
@@ -193,380 +101,280 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
       totalSpentTime,
       socialMediaApplicationUsages
     ) => {
-      const startOfTheDay = moment().hours(0).minutes(0);
-      const currentTime = moment();
-
-      if (
+      const isCurrentTimeStartOfTheDay =
         startOfTheDay.isSame(currentTime, "hour") &&
-        startOfTheDay.isSame(currentTime, "minute")
-      ) {
+        startOfTheDay.isSame(currentTime, "minute");
+
+      if (isCurrentTimeStartOfTheDay) {
         dispatch(refreshSpendTimeInterval());
 
-        const spentTimeGrade = calculateSpentTimeGrade(totalSpentTime);
         const currentProcedurePointInformationGrade =
-          userRef.current.procedurePointInformation.current.overallGrade;
-
-        let newProcedurePointInformationGrade =
-          currentProcedurePointInformationGrade *
-            Q_LEARNING_WEIGHT_VECTOR_COEFFICIENT +
-          spentTimeGrade * (1 - Q_LEARNING_WEIGHT_VECTOR_COEFFICIENT);
-
-        newProcedurePointInformationGrade = Number(
-          newProcedurePointInformationGrade.toFixed(6)
-        );
-
-        const copiedProcedurePointInformation = {
-          current: { ...userRef.current.procedurePointInformation.current },
-          all: userRef.current.procedurePointInformation.all.map(
-            (procedurePoint) => ({
-              ...procedurePoint,
-            })
-          ),
-        };
-
-        const currentProcedurePointInformationFromAll =
-          copiedProcedurePointInformation.all.find(
-            (procedurePoint) =>
-              procedurePoint.id ===
-              userRef.current.procedurePointInformation.current.id
+          procedureService.calculateCurrentProcedurePointInformationGrade(
+            currentUser,
+            totalSpentTime
           );
 
-        currentProcedurePointInformationFromAll.overallGrade =
-          newProcedurePointInformationGrade;
-        currentProcedurePointInformationFromAll.count += 1;
+        const userProcedurePointInformationOverallGrade =
+          procedureService.getOverallProcedurePointInformationGrade(
+            currentUser
+          );
 
-        copiedProcedurePointInformation.current =
-          getCurrentProcedurePointInformation(
-            copiedProcedurePointInformation.all
+        let newProcedurePointInformationGrade =
+          procedureService.calculateNewProcedurePointInformationGrade(
+            userProcedurePointInformationOverallGrade,
+            currentProcedurePointInformationGrade
+          );
+
+        const copiedProcedurePointInformation =
+          procedureService.updateProcedurePointInformationCountAndReturn(
+            currentUser,
+            newProcedurePointInformationGrade
           );
 
         if (isNetworkConnected) {
           try {
-            const [procedurePointInformationsResponse] = await Promise.all([
-              await fetchAddOrUpdateProcedurePointInformations({
-                userId: userRef.current.id,
-                procedurePointInformations: copiedProcedurePointInformation.all,
-              }),
-              await fetchAddSocialMediaApplicationUsages({
-                userId: userRef.current.id,
-                addictionLevelId: userRef.current.addictionLevel.id,
-                socialMediaApplicationUsages,
-              }),
-            ]);
+            const [savedProcedurePointInformationsResponse] = await Promise.all(
+              [
+                await fetchAddOrUpdateProcedurePointInformations({
+                  userId: currentUser.id,
+                  procedurePointInformations:
+                    copiedProcedurePointInformation.all,
+                }),
+                await fetchAddSocialMediaApplicationUsages({
+                  userId: currentUser.id,
+                  addictionLevelId: currentUser.addictionLevel.id,
+                  socialMediaApplicationUsages,
+                }),
+              ]
+            );
 
-            const procedurePointInformationsData =
-              procedurePointInformationsResponse.data.items;
+            const savedProcedurePointInformationsResponseData =
+              savedProcedurePointInformationsResponse.data.items;
 
-            const currentProcedurePointInformation =
-              getCurrentProcedurePointInformation(
-                procedurePointInformationsData
-              );
-
-            storeObject("procedurePointInformation", {
-              all: procedurePointInformationsData,
-              current: currentProcedurePointInformation,
-              status: ProcedurePointInformationSaveStatusTypes.Lately,
-            });
-
-            dispatch(
-              setUser({
-                ...userRef.current,
-                procedurePointInformation: {
-                  all: procedurePointInformationsData,
-                  current: currentProcedurePointInformation,
-                  status: ProcedurePointInformationSaveStatusTypes.Lately,
-                },
-              })
+            await procedureService.updateNewSavedProcedurePointInformations(
+              currentUser,
+              savedProcedurePointInformationsResponseData,
+              ProcedurePointInformationSaveStatusTypes.Lately,
+              dispatch
             );
           } catch (error) {
             console.log(error.response);
-            saveProcedurePointInformationLocally(
-              copiedProcedurePointInformation,
-              userRef.current
-            );
 
-            saveSocialMediaApplicationUsagesLocally(
-              socialMediaApplicationUsages
+            await procedureService.updateNewSavedProcedurePointInformations(
+              currentUser,
+              copiedProcedurePointInformation,
+              ProcedurePointInformationSaveStatusTypes.MustUpdate,
+              dispatch
             );
           }
         } else {
-          console.log(socialMediaApplicationUsages);
-
-          saveProcedurePointInformationLocally(
+          await procedureService.updateNewSavedProcedurePointInformations(
+            currentUser,
             copiedProcedurePointInformation,
-            userRef.current
+            ProcedurePointInformationSaveStatusTypes.MustUpdate,
+            dispatch
           );
 
-          saveSocialMediaApplicationUsagesLocally(socialMediaApplicationUsages);
+          await usageStatsService.saveSocialMediaApplicationUsagesLocally(
+            localStorageService,
+            socialMediaApplicationUsages
+          );
         }
       }
     };
 
-  const saveProcedurePointInformationLocally = (
-    copiedProcedurePointInformation,
-    user
-  ) => {
-    storeObject("procedurePointInformation", {
-      ...copiedProcedurePointInformation,
-      status: ProcedurePointInformationSaveStatusTypes.MustUpdate,
-    });
-
-    dispatch(
-      setUser({
-        ...user,
-        procedurePointInformation: {
-          ...copiedProcedurePointInformation,
-          status: ProcedurePointInformationSaveStatusTypes.MustUpdate,
-        },
-      })
-    );
-  };
-
-  const saveSocialMediaApplicationUsagesLocally = (
-    socialMediaApplicationUsages
-  ) => {
-    storeObject("socialMediaApplicationUsages", [
-      ...socialMediaApplicationUsages,
-    ]);
-  };
-
-  const calculateSpentTimeGrade = (totalSpentTime) => {
-    const userDailyLimit = userRef.current.addictionLevel.dailyLimit;
-    const intervalValue = userDailyLimit / 2;
-    const firstPieceOfFirstPositiveInterval = intervalValue / 5;
-    const secondPieceFirstPositiveInterval = intervalValue / 10;
-
-    if (totalSpentTime >= 0 && totalSpentTime < intervalValue) {
-      return (
-        MAX_GRADE_INTERVAL -
-        Math.ceil(totalSpentTime / firstPieceOfFirstPositiveInterval)
-      );
-    } else if (
-      totalSpentTime >= intervalValue &&
-      totalSpentTime < userDailyLimit
-    ) {
-      return (
-        MAX_GRADE_INTERVAL / 2 -
-        Math.ceil(totalSpentTime / secondPieceFirstPositiveInterval)
-      );
-    } else if (totalSpentTime >= userDailyLimit) {
-      return (
-        Math.ceil(
-          (totalSpentTime - userDailyLimit) / secondPieceFirstPositiveInterval
-        ) * -1
-      );
-    } else {
-      return MIN_GRADE_INTERVAL;
-    }
-  };
-
-  const handleSendNotification = async (totalSpentTime) => {
-    handleSendCommonNotification();
-    await handleSendDynamicNotificationBySpentTimeOfUser(totalSpentTime);
-  };
-
   const handleSendCommonNotification = () => {
-    const currentTime = moment();
+    const foundNotificationContent =
+      notificationService.getCommonNotificationContent(
+        currentUser,
+        currentTime
+      );
 
-    const foundNotification = getCommonNotification(
-      userRef.current.procedurePointInformation.current.procedure.name,
-      currentTime,
-      userRef.current.firstName
-    );
-
-    if (foundNotification) {
-      showLocalNotification("1", "diDENGE", foundNotification.message);
+    if (foundNotificationContent) {
+      notificationService.sendNotification(
+        new PushNotificationOptions({
+          type: PushNotificationType.Normal,
+          date: new Date(Date.now() + 2000),
+          title: APP_NAME,
+          message: foundNotificationContent.message,
+        })
+      );
     }
   };
 
-  const handleSendDynamicNotificationBySpentTimeOfUser = async (
-    totalSpentTime
-  ) => {
-    const userDailyLimit = userRef.current.addictionLevel.dailyLimit;
+  const handleSendDynamicNotification = async (totalSpentTime) => {
+    const userDailyLimit = currentUser.addictionLevel.dailyLimit;
 
-    const intervalValue = userDailyLimit / 2;
-    const firstPieceOfFirstPositiveInterval = intervalValue / 5;
-    const secondPieceFirstPositiveInterval = intervalValue / 10;
+    const firstPieceOfFirstPositiveInterval =
+      getFirstPieceOfUserDailyLimitInterval(userDailyLimit);
+    const secondPieceFirstPositiveInterval =
+      getSecondPieceOfUserDailyLimitInterval(userDailyLimit);
 
-    if (
-      totalSpentTime > 0 &&
-      totalSpentTime <= firstPieceOfFirstPositiveInterval * 2
-    ) {
-      if (
-        !spendTimeIntervalRef.current[
-          DynamicNotificationTypes.BeginningOfSpendTime
-        ]
-      ) {
-        const foundNotification = getDynamicNotification(
-          userRef.current.procedurePointInformation.current.procedure.name,
-          DynamicNotificationTypes.BeginningOfSpendTime,
-          userRef.current.firstName
-        );
+    const beginningOfSpendTimeStrategy = {
+      condition:
+        totalSpentTime > 0 &&
+        totalSpentTime <= firstPieceOfFirstPositiveInterval * 2,
+      strategy: BeginningOfSpendTimeDynamicNotificationStrategy,
+    };
 
-        if (foundNotification) {
-          dispatch(
-            setSpendTimeInterval({
-              ...spendTimeIntervalRef.current,
-              [DynamicNotificationTypes.BeginningOfSpendTime]: true,
-            })
+    const nearlyHalfOfSpendTimeStrategy = {
+      condition:
+        totalSpentTime > firstPieceOfFirstPositiveInterval * 4 &&
+        totalSpentTime < firstPieceOfFirstPositiveInterval * 5,
+      strategy: NearlyHalfOfSpendTimeDynamicNotificationStrategy,
+    };
+
+    const afterHalfOfSpendTimeStrategy = {
+      condition:
+        totalSpentTime > intervalValue &&
+        totalSpentTime <= intervalValue + secondPieceFirstPositiveInterval,
+      strategy: AfterAllOfSpendTimeDynamicNotificationStrategy,
+    };
+
+    const nearlyAllOfSpendTimeStrategy = {
+      condition:
+        totalSpentTime > intervalValue + secondPieceFirstPositiveInterval * 9 &&
+        totalSpentTime <= userDailyLimit,
+      strategy: NearlyAllOfSpendTimeDynamicNotificationStrategy,
+    };
+
+    const afterAllOfSpendTimeStrategy = {
+      condition:
+        totalSpentTime > userDailyLimit &&
+        totalSpentTime < userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
+      strategy: AfterAllOfSpendTimeDynamicNotificationStrategy,
+    };
+
+    const failedOfObeyingStrategy = {
+      condition:
+        totalSpentTime >= userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
+      strategy: FailedOfObeyingSpendTimeDynamicNotificationStrategy,
+    };
+
+    const strategies = [
+      beginningOfSpendTimeStrategy,
+      nearlyHalfOfSpendTimeStrategy,
+      afterHalfOfSpendTimeStrategy,
+      nearlyAllOfSpendTimeStrategy,
+      afterAllOfSpendTimeStrategy,
+      failedOfObeyingStrategy,
+    ];
+
+    for (const { condition, strategy } of strategies) {
+      if (condition) {
+        const hasStrategyExecutedBefore =
+          currentSpentTimeInterval[strategy.type];
+
+        if (!hasStrategyExecutedBefore) {
+          const notificationStrategy = new strategy(
+            currentUser,
+            dispatch,
+            currentSpentTimeInterval,
+            notificationService
           );
-
-          showLocalNotification("1", "diDENGE", foundNotification.message);
-        }
-      }
-    } else if (
-      totalSpentTime > firstPieceOfFirstPositiveInterval * 4 &&
-      totalSpentTime < firstPieceOfFirstPositiveInterval * 5
-    ) {
-      if (
-        !spendTimeIntervalRef.current[
-          DynamicNotificationTypes.NearlyHalfOfSpendTime
-        ]
-      ) {
-        const foundNotification = getDynamicNotification(
-          userRef.current.procedurePointInformation.current.procedure.name,
-          DynamicNotificationTypes.NearlyHalfOfSpendTime,
-          userRef.current.firstName
-        );
-
-        if (foundNotification) {
-          dispatch(
-            setSpendTimeInterval({
-              ...spendTimeIntervalRef.current,
-              [DynamicNotificationTypes.NearlyHalfOfSpendTime]: true,
-            })
-          );
-
-          showLocalNotification("1", "diDENGE", foundNotification.message);
-        }
-      }
-    } else if (
-      totalSpentTime > intervalValue &&
-      totalSpentTime <= intervalValue + secondPieceFirstPositiveInterval
-    ) {
-      if (
-        !spendTimeIntervalRef.current[
-          DynamicNotificationTypes.AfterHalfOfSpendTime
-        ]
-      ) {
-        const foundNotification = getDynamicNotification(
-          userRef.current.procedurePointInformation.current.procedure.name,
-          DynamicNotificationTypes.AfterHalfOfSpendTime,
-          userRef.current.firstName
-        );
-
-        if (foundNotification) {
-          dispatch(
-            setSpendTimeInterval({
-              ...spendTimeIntervalRef.current,
-              [DynamicNotificationTypes.AfterHalfOfSpendTime]: true,
-            })
-          );
-
-          showLocalNotification("1", "diDENGE", foundNotification.message);
-        }
-      }
-    } else if (
-      totalSpentTime > intervalValue + secondPieceFirstPositiveInterval * 9 &&
-      totalSpentTime <= userDailyLimit
-    ) {
-      if (
-        !spendTimeIntervalRef.current[
-          DynamicNotificationTypes.NearlyAllOfSpendTime
-        ]
-      ) {
-        const foundNotification = getDynamicNotification(
-          userRef.current.procedurePointInformation.current.procedure.name,
-          DynamicNotificationTypes.NearlyAllOfSpendTime,
-          userRef.current.firstName
-        );
-
-        if (foundNotification) {
-          dispatch(
-            setSpendTimeInterval({
-              ...spendTimeIntervalRef.current,
-              [DynamicNotificationTypes.NearlyAllOfSpendTime]: true,
-            })
-          );
-
-          showLocalNotification("1", "diDENGE", foundNotification.message);
-        }
-      }
-    } else if (totalSpentTime > userDailyLimit) {
-      if (
-        totalSpentTime > totalSpentTime &&
-        totalSpentTime <= totalSpentTime + DAILY_LIMIT_EXCESSION_AMOUNT
-      ) {
-        if (
-          !spendTimeIntervalRef.current[
-            DynamicNotificationTypes.AfterAllOfSpendTime
-          ]
-        ) {
-          const foundNotification = getDynamicNotification(
-            userRef.current.procedurePointInformation.current.procedure.name,
-            DynamicNotificationTypes.AfterAllOfSpendTime,
-            userRef.current.firstName
-          );
-
-          if (foundNotification) {
-            dispatch(
-              setSpendTimeInterval({
-                ...spendTimeIntervalRef.current,
-                [DynamicNotificationTypes.AfterAllOfSpendTime]: true,
-              })
-            );
-
-            showLocalNotification("1", "diDENGE", foundNotification.message);
-          }
-        }
-      } else {
-        if (
-          !spendTimeIntervalRef.current[
-            DynamicNotificationTypes.FailedOfObeyingSpendTime
-          ]
-        ) {
-          const foundNotification = getDynamicNotification(
-            userRef.current.procedurePointInformation.current.procedure.name,
-            DynamicNotificationTypes.FailedOfObeyingSpendTime,
-            userRef.current.firstName
-          );
-
-          if (foundNotification) {
-            dispatch(
-              setSpendTimeInterval({
-                ...spendTimeIntervalRef.current,
-                [DynamicNotificationTypes.FailedOfObeyingSpendTime]: true,
-              })
-            );
-
-            showLocalNotification("1", "diDENGE", foundNotification.message);
-          }
+          notificationStrategy.execute();
+          break;
         }
       }
     }
   };
 
-  const getSpentTimeOfAllSocialMediaApplication = async () => {
-    const currentTime = moment();
-
-    const todayTime = currentTime.clone().startOf("day");
-
-    const allStats = await UsageStats.getUsageStats(
-      todayTime.valueOf(),
-      currentTime.valueOf()
-    );
+  const getSocialMediaApplicationUsages = async () => {
+    const allSocialMediaApplicationUsages =
+      await usageStatsService.getUsageStats(
+        startOfTheDay.valueOf(),
+        currentTime.valueOf()
+      );
 
     // FIX: Sosyal medya uygulamalari ön planda calisirken kullanım süresi değişmiyor fakat arkaplana alınca süre güncelleniyor.
-    const totalSpentTime = getTotalSpentTimeOfSocialMediaApplications(allStats);
-    const roundedTotalSpendTime = Math.floor(totalSpentTime / 60);
+    const totalSpentTimeOfSocialMediaApplications =
+      usageStatsService.getTotalSpentTimeOfSocialMediaApplications(
+        allSocialMediaApplicationUsages
+      );
 
-    // console.log(allStats);
+    const totalSpentTimeOfSocialMediaApplicationsAsMinutes = Math.floor(
+      totalSpentTimeOfSocialMediaApplications / 60
+    );
 
-    // console.log(
-    //   `Harcadığı süre : ${roundedTotalSpendTime} dk , şu an ${currentTime}`
-    // );
+    return new SocialMediaApplicationUsageDto(
+      allSocialMediaApplicationUsages,
+      totalSpentTimeOfSocialMediaApplicationsAsMinutes
+    );
+  };
 
-    return { roundedTotalSpendTime, allStats };
+  const clearAllNotifications = () => {
+    setTimeout(() => {
+      notificationService.clearAllNotifications();
+    }, CLEAR_ALL_NOTIFICATION_INTERVAL + PUSH_NOTIFICATION_INTERVAL);
+  };
+
+  const checkIfAnyLocalDataHasToBeUpdated = async () => {
+    const localProcedurePointInformation = await localStorageService.getObject(
+      LocalStorageKeys.PROCEDURE_POINT_INFORMATION
+    );
+
+    const localSocialMediaApplicationUsage =
+      await localStorageService.getObject(
+        LocalStorageKeys.SOCIAL_MEDIA_APPLICATION_USAGES
+      );
+
+    const isLocalProcedurePointInformationStateMustUpdate =
+      localProcedurePointInformation.status ===
+      ProcedurePointInformationSaveStatusTypes.MustUpdate;
+
+    const isLocalSocialMediaApplicationUsagesStateExist =
+      localSocialMediaApplicationUsage !== null;
+
+    const isAnyLocalDataHasToBeUpdated =
+      isLocalProcedurePointInformationStateMustUpdate ||
+      isLocalSocialMediaApplicationUsagesStateExist;
+
+    if (isAnyLocalDataHasToBeUpdated) {
+      try {
+        notificationService.sendNotification({
+          type: PushNotificationType.Silent,
+          date: new Date(Date.now() + PUSH_NOTIFICATION_INTERVAL),
+          title: APP_NAME,
+          message: "Kullanım süreleriniz kaydediliyor ...",
+        });
+
+        if (isLocalProcedurePointInformationStateMustUpdate) {
+          const savedProcedurePointInformationsResponse =
+            await apiService.procedures.fetchAddOrUpdateProcedurePointInformations(
+              new AddOrUpdateProcedurePointInformationsRequestDto(
+                currentUser,
+                localProcedurePointInformation.all
+              )
+            );
+
+          const savedProcedurePointInformationsResponseData =
+            savedProcedurePointInformationsResponse.data.items;
+
+          await procedureService.updateNewSavedProcedurePointInformations(
+            currentUser,
+            savedProcedurePointInformationsResponseData,
+            ProcedurePointInformationSaveStatusTypes.Lately,
+            dispatch
+          );
+        }
+        if (isLocalSocialMediaApplicationUsagesStateExist) {
+          await apiService.socialMediaApplicationUsages.fetchAddSocialMediaApplicationUsages(
+            new AddSocialMediaApplicationUsagesRequestDto(
+              currentUser,
+              socialMediaApplicationUsages
+            )
+          );
+
+          await localStorageService.removeItem(
+            LocalStorageKeys.SOCIAL_MEDIA_APPLICATION_USAGES
+          );
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        clearAllNotifications();
+      }
+    }
   };
 };
 

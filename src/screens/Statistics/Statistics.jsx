@@ -1,27 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/Container/Container";
 import GoBackButton from "../../components/GoBackButton";
-import {
-  ActivityIndicator,
-  NativeModules,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import DailyResultApplicationMenuItem from "./DailyResultApplicationMenuItem";
-import getDailyResultPerApplicationGraphJsCode from "./DailyResultPerApplicationGraphJsCode";
-import getDailyResultPerHourGraphJsCode from "./DailyResultPerHourGraphJsCode";
+import getDailyResultPerApplicationGraphJsCode from "../../charts/scripts/DailyResultPerApplicationGraphJsCode";
+import getDailyResultPerHourGraphJsCode from "../../charts/scripts/DailyResultPerHourGraphJsCode";
 import ChartLoader from "../../components/ChartLoader";
 import moment from "moment";
-import { getTotalSpentTimeOfSocialMediaApplications } from "../../utils/UsageStatsParser";
 import socialMediaApplicationColors from "../../constants/socialMediaApplicationColors";
-
-const { UsageStats } = NativeModules;
+import UsageStatsService from "../../services/usageStatsService";
+import { currentTime, startOfTheDay } from "../../utils/timeUtils";
 
 function Statistics({ updateCurrentScreen }) {
   const navigation = useNavigation();
   const route = useRoute();
+
+  const usageStatsService = new UsageStatsService();
 
   const [selectedDate] = useState(new Date(route.params.selectedDate));
 
@@ -46,20 +41,20 @@ function Statistics({ updateCurrentScreen }) {
     }
   }, [selectedDate]);
 
-
   const dailyResultPerHourGraphJsCode = useMemo(() => {
     return getDailyResultPerHourGraphJsCode(fetchResult.data.hourBased);
   }, [fetchResult]);
 
   const dailyResultPerApplicationGraphJsCode = useMemo(() => {
-    const formattedDailyResultPerApplicationSeriesData = fetchResult.data.applicatedBased.map((result) => {
-      return {
-        name: result.name,
-        data: [result.spentTime],
-        color: result.color,
-      };
-    });
-    
+    const formattedDailyResultPerApplicationSeriesData =
+      fetchResult.data.applicatedBased.map((result) => {
+        return {
+          name: result.name,
+          data: [result.spentTime],
+          color: result.color,
+        };
+      });
+
     return getDailyResultPerApplicationGraphJsCode(
       formattedDailyResultPerApplicationSeriesData
     );
@@ -68,34 +63,34 @@ function Statistics({ updateCurrentScreen }) {
   const getTotalSpentTimeOfAllSocialMediaApplicationsByEndTime = async (
     endTime
   ) => {
-    const currentTime = moment();
+    const allSocialMediaApplicationUsages =
+      await usageStatsService.getUsageStats(
+        startOfTheDay.valueOf(),
+        endTime.valueOf()
+      );
 
-    const todayTime = currentTime.clone().startOf("day");
+    const totalSpentTimeOfSocialMediaApplications =
+      usageStatsService.getTotalSpentTimeOfSocialMediaApplications(
+        allSocialMediaApplicationUsages
+      );
 
-    const allStats = await UsageStats.getUsageStats(
-      todayTime.valueOf(),
-      endTime.valueOf()
+    const totalSpentTimeOfSocialMediaApplicationsAsMinutes = Math.floor(
+      totalSpentTimeOfSocialMediaApplications / 60
     );
-
-    const totalSpentTime = getTotalSpentTimeOfSocialMediaApplications(allStats);
-    const roundedTotalSpendTime = Math.floor(totalSpentTime / 60);
-    return roundedTotalSpendTime;
+    
+    return totalSpentTimeOfSocialMediaApplicationsAsMinutes;
   };
 
   const getSocialMediaApplicationUsages = async () => {
-    const currentTime = moment();
-
-    const todayTime = currentTime.clone().startOf("day");
-
-    const allStats = await UsageStats.getUsageStats(
-      todayTime.valueOf(),
+    const allSocialMediaApplicationUsages = await usageStatsService.getUsageStats(
+      startOfTheDay.valueOf(),
       currentTime.valueOf()
     );
 
-    return Object.values(allStats).map((stat) => {
+    return Object.values(allSocialMediaApplicationUsages).map((stat) => {
       return {
         name: stat.appName,
-        spentTime:  stat.totalTimeInForeground,
+        spentTime: stat.totalTimeInForeground,
         openingCount: stat.openCount,
         color: socialMediaApplicationColors[stat.packageName],
       };

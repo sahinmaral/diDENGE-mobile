@@ -1,5 +1,4 @@
 import {
-  Button,
   Text,
   Image,
   Pressable,
@@ -7,19 +6,24 @@ import {
   View,
   Animated,
 } from "react-native";
-import logo from "../../../assets/logo.png";
+import appLogo from "../../../assets/appLogo.png";
 import Container from "../../components/Container/Container";
 import { useFormik } from "formik";
 import DatePicker from "react-native-date-picker";
 import { useEffect, useState } from "react";
 import moment from "moment";
-import { fetchRegisterUser } from "../../services/APIService";
+import apiService from "../../services/apiService";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../hooks/useSpinAnimation.js";
 import { useToast } from "react-native-toast-notifications";
 import ContinueRegisterUserSchema from "../../schemas/ContinueRegisterUserSchema.js";
 import translatedErrorMessages from "../../locale/index.js";
+import ToastOptions from "../../classes/ToastOptions.js";
+import ToastTypes from "../../enums/ToastTypes.js";
+import { sleep } from "../../utils/timeUtils.js";
+import { SUCCESSFULLY_REGISTERED } from "../../constants/messages/index.js";
+import ToastService from "../../services/toastService/index.js";
 
 function ContinueRegister({ navigation, route }) {
   const { requiredInformations } = route.params;
@@ -29,6 +33,7 @@ function ContinueRegister({ navigation, route }) {
   const spin = useSpinAnimation();
 
   const toast = useToast();
+  const toastService = new ToastService(toast);
 
   const formik = useFormik({
     initialValues: {
@@ -47,10 +52,10 @@ function ContinueRegister({ navigation, route }) {
         .map((error) => `* ${error}`)
         .join("\n");
 
-      toast.show(errorWithStars, {
-        type: "warning",
-        placement: "top",
-      });
+      toastService.showToast(
+        errorWithStars,
+        new ToastOptions(ToastTypes.Warning)
+      );
     }
   }, [formik]);
 
@@ -64,35 +69,32 @@ function ContinueRegister({ navigation, route }) {
 
   const handleSubmit = async (values) => {
     try {
-      await fetchRegisterUser({
+      await apiService.auth.fetchRegisterUser({
         ...values,
         phoneNumber: `+90${values.phoneNumber}`,
       });
 
-      toast.show("Başarılı bir şekilde kayıt oldunuz", {
-        type: "success",
-        placement: "top",
-      });
+      toastService.showToast(
+        SUCCESSFULLY_REGISTERED,
+        new ToastOptions(ToastTypes.Success)
+      );
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await sleep(3000);
 
       navigation.navigate("Login");
     } catch (error) {
       if (error.response) {
         const { data } = error.response;
 
-        toast.show(translatedErrorMessages[data.Detail], {
-          type: "danger",
-          placement: "top",
-        });
+        toastService.showToast(
+          translatedErrorMessages[data.Detail],
+          new ToastOptions(ToastTypes.Danger)
+        );
       } else {
         console.log(error);
-        toast.show(
-          "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-          {
-            type: "danger",
-            placement: "top",
-          }
+        toastService.showToast(
+          ERROR_DURING_REGISTER,
+          new ToastOptions(ToastTypes.Danger)
         );
       }
     }
@@ -101,7 +103,7 @@ function ContinueRegister({ navigation, route }) {
   return (
     <Container>
       <View className="flex-[3] justify-center items-center">
-        <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
+        <Image source={appLogo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
       <View className="px-4 flex-[5]">
         <View className="gap-4 flex-[3]">

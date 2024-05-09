@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Container from "../../components/Container/Container";
-import { AppState, NativeModules, Pressable, Text, View } from "react-native";
+import { AppState, Pressable, Text, View } from "react-native";
 import AppPermissionLogo from "../../../assets/app-permission.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "react-native-toast-notifications";
 import { useSelector } from "react-redux";
-
-const { UsageStats } = NativeModules;
+import { USAGE_STATS_PERMISSION_NOT_ACCEPTED } from "../../constants/messages";
+import UsageStatsService from "../../services/usageStatsService";
+import ToastService from "../../services/toastService";
+import ToastOptions from "../../classes/ToastOptions";
+import ToastTypes from "../../enums/ToastTypes";
 
 function CheckPermissionForNewUser({ navigation }) {
   const [isUsageStatPermissionGranted, setIsUsageStatPermissionGranted] =
@@ -17,35 +20,43 @@ function CheckPermissionForNewUser({ navigation }) {
 
   const toast = useToast();
 
+  const usageStatsService = new UsageStatsService();
+  const toastService = new ToastService(toast);
+
   const checkPermission = () => {
-    UsageStats.checkForPermission().then((result) => {
+    usageStatsService.checkForPermission().then((result) => {
       setIsUsageStatPermissionGranted(result);
       if (!result) {
-        toast.show(
-          "Kullanım verilerine erişim iznini onaylamadınız. Lütfen tekrar deneyiniz",
-          { type: "danger", placement: "top" }
+        toastService.showToast(
+          USAGE_STATS_PERMISSION_NOT_ACCEPTED,
+          new ToastOptions(ToastTypes.Success)
         );
       }
     });
   };
 
-  AppState.addEventListener("change", (nextAppState) => {
+  const handleAppStateChange = (nextAppState) => {
     if (nextAppState === "active") {
       checkPermission();
     }
-  });
+  };
+
+  useEffect(() => {
+    AppState.addEventListener("change", handleAppStateChange);
+
+    return () => {
+      AppState.removeEventListener("change", handleAppStateChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (isUsageStatPermissionGranted) {
-      if (user.isNewUser) {
-        navigation.navigate(
-          "ExplanationOfSocialMediaAddictiveLevelIdentification"
-        );
-      } else {
-        navigation.navigate("App");
-      }
+      const screenToNavigate = user.isNewUser
+        ? "ExplanationOfSocialMediaAddictiveLevelIdentification"
+        : "App";
+      navigation.navigate(screenToNavigate);
     }
-  }, [isUsageStatPermissionGranted]);
+  }, [isUsageStatPermissionGranted, navigation, user.isNewUser]);
 
   return (
     <Container customClasses="px-4 py-12">
