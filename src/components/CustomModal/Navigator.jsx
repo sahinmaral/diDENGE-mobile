@@ -1,8 +1,8 @@
-import { BackHandler, Modal, Platform, StatusBar, View } from "react-native";
+import { Modal } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { selectModal, toggleModal } from "../../redux/slices/modalSlice";
 import ModalContentTypes from "../../enums/ModalContentTypes";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { default as ModalContainer } from "./Container";
 import UpdateNameSurnameModalContent from "./Contents/UpdateNameSurnameModalContent";
 import UpdatePasswordModalContent from "./Contents/UpdatePasswordModalContent";

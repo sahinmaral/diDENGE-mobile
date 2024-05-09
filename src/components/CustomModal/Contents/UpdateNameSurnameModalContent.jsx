@@ -9,7 +9,7 @@ import { useToast } from "react-native-toast-notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../../hooks/useSpinAnimation";
-import { fetchUpdateNameSurname } from "../../../services/APIService";
+import apiService from "../../../services/apiService";
 import { useDispatch } from "react-redux";
 
 function UpdateNameSurnameModalContent() {
@@ -56,7 +56,7 @@ function UpdateNameSurnameModalContent() {
   const handleSubmit = (values) => {
     const sendingValues = setValuesAsCorrectFormat(values);
 
-    fetchUpdateNameSurname(sendingValues, user.id, user.accessToken)
+    apiService.users.fetchUpdateNameSurname(sendingValues, user.id, user.accessToken)
       .then(() => {
         dispatch(
           setUser({

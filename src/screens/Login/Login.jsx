@@ -8,9 +8,9 @@ import {
   Animated,
   NativeModules,
 } from "react-native";
-import logo from "../../../assets/logo.png";
-import facebook from "../../../assets/facebook.png";
-import google from "../../../assets/google.png";
+import appLogo from "../../../assets/appLogo.png";
+import facebookLogo from "../../../assets/facebookLogo.png";
+import googleLogo from "../../../assets/googleLogo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import Container from "../../components/Container/Container";
 import { useFormik } from "formik";
@@ -20,33 +20,35 @@ import LoginUserSchema from "../../schemas/LoginUserSchema";
 import translatedErrorMessages from "../../locale";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../hooks/useSpinAnimation";
-import {
-  fetchLoginUser,
-  fetchGetRandomWordOfTheDay,
-  fetchGetAddictionLevelByUserId,
-  fetchGetProcedurePointInformationsByUserId,
-} from "../../services/APIService";
-import { useDispatch,useSelector } from "react-redux";
-import { setUser } from "../../redux/slices/authSlice";
+import apiService from "../../services/apiService";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser, setUser } from "../../redux/slices/authSlice";
 import { setWordOfTheDay } from "../../redux/slices/appSlice";
-import { getCurrentProcedurePointInformation } from "../../utils/ProcedureHelper";
-import { storeObject } from "../../utils/LocalStorageHelper";
+import LocalStorageService from "../../services/localStorageService";
 import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
+import ToastService from "../../services/toastService";
+import ToastOptions from "../../classes/ToastOptions";
+import ToastTypes from "../../enums/ToastTypes";
+import ProcedureService from "../../services/procedureService";
+import {
+  ERROR_DURING_LOGIN,
+  SUCCESSFULLY_LOGGED_IN,
+} from "../../constants/messages";
 
 const { UsageStats } = NativeModules;
+
+const localStorageService = new LocalStorageService();
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
 
-  const { user } = useSelector((state) => state.auth);
-
+  const user = useSelector(selectUser);
   const spin = useSpinAnimation();
-
-  const togglePasswordVisibility = () => {
-    setSecurePassword((prev) => !prev);
-  };
-
   const toast = useToast();
+  const dispatch = useDispatch();
+
+  const toastService = new ToastService(toast);
+  const procedureService = new ProcedureService();
 
   const formik = useFormik({
     initialValues: {
@@ -57,7 +59,22 @@ function Login({ navigation }) {
     onSubmit: (values) => handleSubmit(values),
   });
 
-  const dispatch = useDispatch();
+  const togglePasswordVisibility = () => {
+    setSecurePassword((prev) => !prev);
+  };
+
+  const checkFormikErrors = () => {
+    if (!formik.isValid && !formik.isValidating && formik.isSubmitting) {
+      const errorWithStars = Object.values(formik.errors)
+        .map((error) => `* ${error}`)
+        .join("\n");
+
+      toastService.showToast(
+        errorWithStars,
+        new ToastOptions(ToastTypes.Warning)
+      );
+    }
+  };
 
   useEffect(() => {
     if (user !== null) {
@@ -66,73 +83,54 @@ function Login({ navigation }) {
   }, [user]);
 
   useEffect(() => {
-    if (!formik.isValid && !formik.isValidating && formik.isSubmitting) {
-      const errorWithStars = Object.values(formik.errors)
-        .map((error) => `* ${error}`)
-        .join("\n");
-
-      toast.show(errorWithStars, {
-        type: "warning",
-        placement: "top",
-      });
-    }
+    checkFormikErrors();
   }, [formik]);
 
   const handleSubmit = async (values) => {
     try {
       const [loginResult, fetchRandomWordOfTheDayResult] = await Promise.all([
-        fetchLoginUser({
+        apiService.auth.fetchLoginUser({
           userNameOrEmail: values.email,
           password: values.password,
         }),
-        fetchGetRandomWordOfTheDay(),
+        apiService.wordOfTheDays.fetchGetRandomWordOfTheDay(),
       ]);
 
       const { data: loggedInUserData } = loginResult;
       const { data: randomWordOfTheDay } = fetchRandomWordOfTheDayResult;
 
       const { data: userAddictionLevelData } =
-        await fetchGetAddictionLevelByUserId(loggedInUserData.id);
+        await apiService.addictionLevels.fetchGetAddictionLevelByUserId(
+          loggedInUserData.id
+        );
+
+      dispatch(
+        setUser({
+          ...loggedInUserData,
+          addictionLevel: userAddictionLevelData,
+        })
+      );
 
       if (!loggedInUserData.isNewUser) {
         const procedurePointInformationsResponse =
-          await fetchGetProcedurePointInformationsByUserId(loggedInUserData.id);
+          await apiService.procedures.fetchGetProcedurePointInformationsByUserId(
+            loggedInUserData.id
+          );
 
-        const procedurePointInformationsData =
+        const procedurePointInformationsResponseData =
           procedurePointInformationsResponse.data.items;
 
-        const currentProcedurePointInformation =
-          getCurrentProcedurePointInformation(procedurePointInformationsData);
-
-        storeObject("procedurePointInformation", {
-          all: procedurePointInformationsData,
-          current: currentProcedurePointInformation,
-          status: ProcedurePointInformationSaveStatusTypes.Lately,
-        });
-
-        dispatch(
-          setUser({
-            ...loggedInUserData,
-            addictionLevel: userAddictionLevelData,
-            procedurePointInformation: {
-              all: procedurePointInformationsData,
-              current: currentProcedurePointInformation,
-              status: ProcedurePointInformationSaveStatusTypes.Lately,
-            },
-          })
-        );
-      } else {
-        dispatch(
-          setUser({
-            ...loggedInUserData,
-            addictionLevel: userAddictionLevelData,
-          })
+        procedureService.updateNewSavedProcedurePointInformations(
+          user,
+          procedurePointInformationsResponseData,
+          ProcedurePointInformationSaveStatusTypes.Lately,
+          dispatch
         );
       }
 
       dispatch(setWordOfTheDay(randomWordOfTheDay.content));
 
-      toast.show("Başarılı bir şekilde giriş yaptınız", {
+      toastService.showToast(SUCCESSFULLY_LOGGED_IN, {
         type: "success",
         placement: "top",
       });
@@ -155,17 +153,14 @@ function Login({ navigation }) {
       if (error.response) {
         const { data } = error.response;
 
-        toast.show(translatedErrorMessages[data.Detail], {
-          type: "danger",
-          placement: "top",
-        });
+        toastService.showToast(
+          translatedErrorMessages[data.Detail],
+          new ToastOptions(ToastTypes.Danger)
+        );
       } else {
-        toast.show(
-          "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-          {
-            type: "danger",
-            placement: "top",
-          }
+        toastService.showToast(
+          ERROR_DURING_LOGIN,
+          new ToastOptions(ToastTypes.Danger)
         );
       }
     }
@@ -174,7 +169,7 @@ function Login({ navigation }) {
   return (
     <Container>
       <View className="flex-[3] justify-center items-center">
-        <Image source={logo} className="w-[200] h-[75]" contentFit="fill" />
+        <Image source={appLogo} className="w-[200] h-[75]" contentFit="fill" />
       </View>
       <View className="px-4 flex-[4]">
         <View style={{ flex: 3 / 9 }} className="gap-4">
@@ -254,10 +249,10 @@ function Login({ navigation }) {
         </View>
         <View className="flex-row justify-center gap-4">
           <Pressable>
-            <Image source={facebook} className="w-[50] h-[50]" />
+            <Image source={facebookLogo} className="w-[50] h-[50]" />
           </Pressable>
           <Pressable>
-            <Image source={google} className="w-[50] h-[50]" />
+            <Image source={googleLogo} className="w-[50] h-[50]" />
           </Pressable>
         </View>
       </View>

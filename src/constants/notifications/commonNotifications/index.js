@@ -1,4 +1,4 @@
-import ProcedureTypes from "../../enums/ProcedureTypes";
+import ProcedureTypes from "../../../enums/ProcedureTypes";
 import moment from "moment";
 
 const morning = moment().hours(6).minutes(0);
