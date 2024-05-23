@@ -1,9 +1,11 @@
+import { APP_NAME } from "../constants";
+
 class PushNotificationOptions {
   constructor(options = {}) {
-    const {type, date, title, message, allowWhileIdle = false} = options
-    this.type = type;
+    const {channelId, date, message, allowWhileIdle = false} = options
+    this.channelId = channelId;
     this.date = date;
-    this.title = title;
+    this.title = APP_NAME;
     this.message = message;
     this.allowWhileIdle = allowWhileIdle;
   }

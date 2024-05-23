@@ -5,19 +5,27 @@ import { useFocusEffect } from "@react-navigation/native";
 import ResultOfAddictiveLevelLogo from "../../../assets/result-of-addictive-level.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons";
+import { useDispatch } from "react-redux";
+import { setModalContent } from "../../redux/slices/modalSlice";
+import ModalContentTypes from "../../enums/ModalContentTypes";
 
 function ResultOfAddictiveLevel({ route, navigation }) {
   const { dailyLimit, addictionLevel, userGrade, minimumGrade, maximumGrade } =
     route.params;
 
+  const dispatch = useDispatch();
+
+  const handleHardwareBackPress = () => {
+    dispatch(setModalContent(ModalContentTypes.VerifyCloseApp));
+
+    return true;
+  };
+
   useFocusEffect(
     useCallback(() => {
       const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
-        function () {
-          console.log("Back pressed");
-          return true;
-        }
+        handleHardwareBackPress
       );
 
       return () => {

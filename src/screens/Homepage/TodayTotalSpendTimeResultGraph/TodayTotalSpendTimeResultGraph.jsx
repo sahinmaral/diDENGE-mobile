@@ -5,7 +5,7 @@ import { selectUser } from "../../../redux/slices/authSlice";
 import { useSelector } from "react-redux";
 import ChartLoader from "../../../components/ChartLoader";
 import { useNavigation } from "@react-navigation/native";
-import { currentTime, startOfTheDay } from "../../../utils/timeUtils";
+import { getCurrentTime, getStartOfTheDayTime } from "../../../utils/timeUtils";
 import UsageStatsService from "../../../services/usageStatsService";
 import { ERROR_DURING_FETCHING_SOCIAL_MEDIA_APPLICATIONS_USAGE_DETAIL } from "../../../constants/messages";
 import Loading from "../Loading";
@@ -33,8 +33,8 @@ function TodayTotalSpendTimeResultGraph() {
 
       const allSocialMediaApplicationUsages =
         await usageStatsService.getUsageStats(
-          startOfTheDay.valueOf(),
-          currentTime.valueOf()
+          getStartOfTheDayTime().valueOf(),
+          getCurrentTime().valueOf()
         );
 
       setFetchResult({

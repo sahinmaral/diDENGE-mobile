@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_URL } from '@env';
 
 const fetchUpdateNameSurname = async (values, userId, accessToken) => {
   const config = {
@@ -6,7 +7,7 @@ const fetchUpdateNameSurname = async (values, userId, accessToken) => {
   };
 
   return axios.put(
-    `${process.env.API_URL}/Users/UpdateNameSurname/${userId}`,
+    `${API_URL}/Users/UpdateNameSurname/${userId}`,
     values,
     config
   );
@@ -18,7 +19,7 @@ const fetchUpdatePassword = async (values, userId, accessToken) => {
   };
 
   return axios.put(
-    `${process.env.API_URL}/Users/UpdatePassword/${userId}`,
+    `${API_URL}/Users/UpdatePassword/${userId}`,
     values,
     config
   );
@@ -33,7 +34,7 @@ const fetchUpdateProfileImage = async (values, userId, accessToken) => {
   };
 
   return axios.put(
-    `${process.env.API_URL}/Users/UpdateProfileImage/${userId}`,
+    `${API_URL}/Users/UpdateProfileImage/${userId}`,
     values,
     config
   );
@@ -47,7 +48,7 @@ const fetchDeleteProfileImage = async (userId, accessToken) => {
   };
 
   return axios.delete(
-    `${process.env.API_URL}/Users/DeleteProfileImage/${userId}`,
+    `${API_URL}/Users/DeleteProfileImage/${userId}`,
     config
   );
 };

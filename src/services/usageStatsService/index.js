@@ -1,5 +1,6 @@
 import { NativeModules } from "react-native";
 import * as LocalStorageKeys from '../../constants/localStorageKeys'
+import { APP_PLAYSTORE_NAME } from "../../constants";
 
 const { UsageStats } = NativeModules;
 
@@ -10,6 +11,10 @@ class UsageStatsService {
 
   async checkForPermission(){
     return await UsageStats.checkForPermission();
+  }
+
+  async showUsageAccessSettings(){
+    return await UsageStats.showUsageAccessSettings(APP_PLAYSTORE_NAME);
   }
 
   getTotalSpentTimeOfSocialMediaApplications(allSocialMediaApplicationUsages) {

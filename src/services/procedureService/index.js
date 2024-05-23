@@ -1,10 +1,16 @@
 import StoreProcedurePointInformationDto from "../../classes/StoreProcedurePointInformationDto";
 import { MAX_GRADE_INTERVAL, MIN_GRADE_INTERVAL } from "../../constants";
 import * as LocalStorageKeys from "../../constants/localStorageKeys";
+import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
 import ProcedureTypes from "../../enums/ProcedureTypes";
 import { setUser } from "../../redux/slices/authSlice";
+import LocalStorageService from "../localStorageService";
 
 class ProcedureService {
+  constructor() {
+    this.localStorageService = new LocalStorageService();
+  }
+
   calculateCurrentProcedurePointInformationGrade = (
     currentUser,
     totalSpentTime
@@ -82,7 +88,9 @@ class ProcedureService {
     } else if (warningProcedure.count >= 0 && warningProcedure.count < 3) {
       return warningProcedure;
     } else {
-      return getMaxProcedurePointInformation(userProcedurePointInformations);
+      return this.getMaxProcedurePointInformation(
+        userProcedurePointInformations
+      );
     }
   };
 
@@ -109,25 +117,25 @@ class ProcedureService {
     const currentSavedProcedurePointInformation =
       this.getCurrentProcedurePointInformation(savedProcedurePointInformation);
 
-    await localStorageService.storeObject(
+    await this.localStorageService.storeObject(
       LocalStorageKeys.PROCEDURE_POINT_INFORMATION,
       new StoreProcedurePointInformationDto(
-        savedProcedurePointInformationsResponse,
+        savedProcedurePointInformation,
         currentSavedProcedurePointInformation,
         ProcedurePointInformationSaveStatusTypes.Lately
       )
     );
 
-    dispatch(
-      setUser({
-        ...currentUser,
-        procedurePointInformation: {
-          all: procedurePointInformationsData,
-          current: currentProcedurePointInformation,
-          status: procedurePointInformationStatus,
-        },
-      })
-    );
+    const updatedUser = {
+      ...currentUser,
+      procedurePointInformation: {
+        all: savedProcedurePointInformation,
+        current: currentSavedProcedurePointInformation,
+        status: procedurePointInformationStatus,
+      },
+    };
+    
+    dispatch(setUser(updatedUser));
   };
 
   copyProcedurePointInformation = (currentUser) => {
@@ -139,7 +147,10 @@ class ProcedureService {
     };
   };
 
-  updateProcedurePointInformationCountAndReturn = (currentUser, newProcedurePointInformationGrade) => {
+  updateProcedurePointInformationCountAndReturn = (
+    currentUser,
+    newProcedurePointInformationGrade
+  ) => {
     const copiedProcedurePointInformation =
       this.copyProcedurePointInformation(currentUser);
 
@@ -159,7 +170,7 @@ class ProcedureService {
         copiedProcedurePointInformation.all
       );
 
-    return copiedProcedurePointInformation
+    return copiedProcedurePointInformation;
   };
 }
 

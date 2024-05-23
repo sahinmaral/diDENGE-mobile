@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import DynamicNotificationTypes from "../../enums/DynamicNotificationTypes";
+import CommonNotificationTypes from "../../enums/CommonNotificationTypes";
+import SocialMediaAddictionLevelTestReminderNotificationTypes from "../../enums/SocialMediaAddictionLevelTestReminderNotificationTypes"
 
 const initialSpendTimeInterval = {
   [DynamicNotificationTypes.BeginningOfSpendTime]: false,
@@ -8,11 +10,26 @@ const initialSpendTimeInterval = {
   [DynamicNotificationTypes.NearlyAllOfSpendTime]: false,
   [DynamicNotificationTypes.AfterAllOfSpendTime]: false,
   [DynamicNotificationTypes.FailedOfObeyingSpendTime]: false,
-}
+};
+
+const initialCommonNotificationInterval = {
+  [CommonNotificationTypes.Morning]: false,
+  [CommonNotificationTypes.MiddleOfTheDay]: false,
+  [CommonNotificationTypes.Evening]: false,
+};
+
+
+const initialSocialMediaAddictionLevelTestReminderNotificationInterval = {
+  [SocialMediaAddictionLevelTestReminderNotificationTypes.Morning]: false,
+  [SocialMediaAddictionLevelTestReminderNotificationTypes.MiddleOfTheDay]: false,
+  [SocialMediaAddictionLevelTestReminderNotificationTypes.Evening]: false,
+};
 
 const initialState = {
   wordOfTheDay: null,
-  spendTimeInterval: initialSpendTimeInterval
+  spendTimeInterval: initialSpendTimeInterval,
+  commonNotificationInterval: initialCommonNotificationInterval,
+  socialMediaAddictionLevelTestReminderInterval: initialSocialMediaAddictionLevelTestReminderNotificationInterval
 };
 
 export const appSlice = createSlice({
@@ -22,18 +39,39 @@ export const appSlice = createSlice({
     setWordOfTheDay: (state, action) => {
       state.wordOfTheDay = action.payload;
     },
+    setCommonNotificationInterval: (state, action) => {
+      state.commonNotificationInterval = action.payload;
+    },
     setSpendTimeInterval: (state, action) => {
       state.spendTimeInterval = action.payload;
     },
-    refreshSpendTimeInterval : (state) => {
+    setSocialMediaAddictionLevelTestReminderInterval: (state, action) => {
+      state.socialMediaAddictionLevelTestReminderInterval = action.payload;
+    },
+    refreshSpendTimeInterval: (state) => {
       state.spendTimeInterval = initialSpendTimeInterval;
-    }
+    },
+    refreshCommonNotificationInterval: (state) => {
+      state.commonNotificationInterval = initialCommonNotificationInterval;
+    },
+    refreshSocialMediaAddictionLevelTestReminderInterval: (state) => {
+      state.socialMediaAddictionLevelTestReminderInterval = initialSocialMediaAddictionLevelTestReminderNotificationInterval;
+    },
   },
 });
 
-export const { setWordOfTheDay, setSpendTimeInterval,refreshSpendTimeInterval } = appSlice.actions;
+export const {
+  setWordOfTheDay,
+  setSpendTimeInterval,
+  setCommonNotificationInterval,
+  setSocialMediaAddictionLevelTestReminderInterval,
+  refreshSpendTimeInterval,
+  refreshCommonNotificationInterval,
+  refreshSocialMediaAddictionLevelTestReminderInterval
+} = appSlice.actions;
 
 export const selectWordOfTheDay = (state) => state.app.wordOfTheDay;
 export const selectSpendTimeInterval = (state) => state.app.spendTimeInterval;
+export const selectCommonNotificationInterval = (state) => state.app.commonNotificationInterval;
 
 export default appSlice.reducer;

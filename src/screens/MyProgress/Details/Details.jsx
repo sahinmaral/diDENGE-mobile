@@ -13,11 +13,13 @@ import socialMediaApplicationColors from "../../../constants/socialMediaApplicat
 function Details() {
   const user = useSelector(selectUser);
 
-  const [fetchResult, setFetchResult] = useState({
+  const initialFetchResultState = {
     error: null,
     loading: true,
     data: [],
-  });
+  }
+
+  const [fetchResult, setFetchResult] = useState(initialFetchResultState);
 
   // const exampleResultData = [
   //   {
@@ -138,7 +140,6 @@ function Details() {
       }
     );
 
-    // console.log(fetchResult.data);
 
     for (let i = 0; i < fetchResult.data.length; i++) {
       const totalUsagesOfDay = fetchResult.data[i];
@@ -149,9 +150,11 @@ function Details() {
           (app) => app.name === socialMediaApplicationUsage.name
         );
 
-        foundOfAdded.data[i] = Math.floor(
-          socialMediaApplicationUsage.totalSpendTime / 60
-        );
+        if(foundOfAdded){
+          foundOfAdded.data[i] = Math.floor(
+            socialMediaApplicationUsage.totalSpendTime / 60
+          );
+        }
       }
     }
 
@@ -178,11 +181,11 @@ function Details() {
 
   const getSocialMediaApplicationUsagesByStartTime = (startTime) => {
     apiService.socialMediaApplicationUsages
-      .fetchGetSocialMediaApplicationUsagesByStartTime(user.id, startTime)
+      .fetchGetSocialMediaApplicationUsagesByStartAndEndTime(user.id, startTime)
       .then((response) => {
         setFetchResult({
           ...fetchResult,
-          data: [...response.data],
+          data: response.data,
         });
 
         if (response.data.every((element) => element.length === 0)) {
@@ -212,6 +215,7 @@ function Details() {
   };
 
   useEffect(() => {
+    setFetchResult({...initialFetchResultState})
     const startTime = setStartTimeByDuration(selectedDuration);
     getSocialMediaApplicationUsagesByStartTime(startTime);
   }, [selectedDuration]);

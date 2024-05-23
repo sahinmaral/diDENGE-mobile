@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { useMemo, useState, useCallback } from "react";
+import { View, Text, Pressable, BackHandler } from "react-native";
 import socialMediaAddictiveLevelIdentificationTestQuestions from "../../constants/socialMediaAddictiveLevelIdentificationTestQuestions";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import AnswerButton from "./AnswerButton";
@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import LottieView from "lottie-react-native";
 import { BlurView } from "@react-native-community/blur";
 import { useToast } from "react-native-toast-notifications";
-import { selectUser, setUser } from "../../redux/slices/authSlice";
+import { clearUser, selectUser, setUser } from "../../redux/slices/authSlice";
 import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
 import ToastService from "../../services/toastService";
 import { ERROR_DURING_SAVING_USER_ADDICTION_LEVEL } from "../../constants/messages";
@@ -19,6 +19,9 @@ import ToastOptions from "../../classes/ToastOptions";
 import ToastTypes from "../../enums/ToastTypes";
 import { sleep } from "../../utils/timeUtils";
 import ProcedureService from "../../services/procedureService";
+import { setModalContent } from "../../redux/slices/modalSlice";
+import { useFocusEffect } from "@react-navigation/native";
+import ModalContentTypes from "../../enums/ModalContentTypes";
 
 function SocialMediaAddictiveLevelIdentification({ navigation }) {
   const user = useSelector(selectUser);
@@ -64,6 +67,25 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
     );
   }, [questionInformations.currentPage]);
 
+  const handleHardwareBackPress = () => {
+    dispatch(setModalContent(ModalContentTypes.VerifyExitSocialMediaAddictionLevelIdentification));
+
+    return true;
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        handleHardwareBackPress
+      );
+
+      return () => {
+        backHandler.remove();
+      };
+    }, [])
+  );
+
   const addPoints = async (point) => {
     questionInformations.totalAnsweredQuestions[
       questionInformations.currentPage
@@ -92,12 +114,10 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
 
         const savedAddictionLevelData = savedAddictionLevelResponse.data;
 
-        dispatch(
-          setUser({
-            ...user,
-            addictionLevel: savedAddictionLevelData.addictionLevel,
-          })
-        );
+        const savedUser = {
+          ...user,
+          addictionLevel: savedAddictionLevelData.addictionLevel,
+        };
 
         const savedProcedurePointInformationsResponse =
           await apiService.procedures.fetchAddOrUpdateProcedurePointInformations(
@@ -110,9 +130,10 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
           savedProcedurePointInformationsResponse.data.items;
 
         await procedureService.updateNewSavedProcedurePointInformations(
-          user,
+          savedUser,
           savedProcedurePointInformationsData,
-          ProcedurePointInformationSaveStatusTypes.Lately
+          ProcedurePointInformationSaveStatusTypes.Lately,
+          dispatch
         );
 
         navigation.navigate("ResultOfAddictiveLevel", {
@@ -131,7 +152,7 @@ function SocialMediaAddictiveLevelIdentification({ navigation }) {
         );
 
         await sleep(3000);
-        dispatch(setUser(null));
+        dispatch(clearUser());
 
         navigation.navigate("Login");
       } finally {

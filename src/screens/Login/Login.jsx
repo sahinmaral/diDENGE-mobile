@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
   Text,
@@ -6,7 +6,6 @@ import {
   View,
   Image,
   Animated,
-  NativeModules,
 } from "react-native";
 import appLogo from "../../../assets/appLogo.png";
 import facebookLogo from "../../../assets/facebookLogo.png";
@@ -22,11 +21,11 @@ import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import useSpinAnimation from "../../hooks/useSpinAnimation";
 import apiService from "../../services/apiService";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser, setUser } from "../../redux/slices/authSlice";
+import { setUser } from "../../redux/slices/authSlice";
 import { setWordOfTheDay } from "../../redux/slices/appSlice";
-import LocalStorageService from "../../services/localStorageService";
 import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
 import ToastService from "../../services/toastService";
+import UsageStatsService from "../../services/usageStatsService";
 import ToastOptions from "../../classes/ToastOptions";
 import ToastTypes from "../../enums/ToastTypes";
 import ProcedureService from "../../services/procedureService";
@@ -34,21 +33,21 @@ import {
   ERROR_DURING_LOGIN,
   SUCCESSFULLY_LOGGED_IN,
 } from "../../constants/messages";
-
-const { UsageStats } = NativeModules;
-
-const localStorageService = new LocalStorageService();
+import { getCurrentTime, differenceInDays } from "../../utils/timeUtils";
+import moment from "moment";
+import { SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY } from "../../constants";
 
 function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
 
-  const user = useSelector(selectUser);
+  const user = useSelector((state) => state.auth.user);
   const spin = useSpinAnimation();
   const toast = useToast();
   const dispatch = useDispatch();
 
   const toastService = new ToastService(toast);
   const procedureService = new ProcedureService();
+  const usageStatsService = new UsageStatsService();
 
   const formik = useFormik({
     initialValues: {
@@ -56,7 +55,7 @@ function Login({ navigation }) {
       password: "Abc1234.",
     },
     validationSchema: LoginUserSchema,
-    onSubmit: (values) => handleSubmit(values),
+    onSubmit: async (values) => await handleSubmit(values),
   });
 
   const togglePasswordVisibility = () => {
@@ -78,7 +77,31 @@ function Login({ navigation }) {
 
   useEffect(() => {
     if (user !== null) {
-      navigation.navigate("App");
+      const timeOfLatestSocialMediaAddictionLevelTest = differenceInDays(
+        getCurrentTime(),
+        moment(user.addictionLevel.createdAt)
+      );
+
+      if (
+        timeOfLatestSocialMediaAddictionLevelTest >=
+        SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY
+      ) {
+        navigation.navigate(
+          "ExplanationOfSocialMediaAddictiveLevelIdentification",
+          {
+            userAddictionLevelData: user.addictionLevel,
+          }
+        );
+      } else if (user.isNewUser) {
+        navigation.navigate(
+          "ExplanationOfSocialMediaAddictiveLevelIdentification",
+          {
+            userAddictionLevelData: null,
+          }
+        );
+      } else {
+        navigation.navigate("App");
+      }
     }
   }, [user]);
 
@@ -104,12 +127,12 @@ function Login({ navigation }) {
           loggedInUserData.id
         );
 
-      dispatch(
-        setUser({
-          ...loggedInUserData,
-          addictionLevel: userAddictionLevelData,
-        })
-      );
+      const savedUser = {
+        ...loggedInUserData,
+        addictionLevel: userAddictionLevelData,
+      };
+
+      dispatch(setUser(savedUser));
 
       if (!loggedInUserData.isNewUser) {
         const procedurePointInformationsResponse =
@@ -120,8 +143,8 @@ function Login({ navigation }) {
         const procedurePointInformationsResponseData =
           procedurePointInformationsResponse.data.items;
 
-        procedureService.updateNewSavedProcedurePointInformations(
-          user,
+        await procedureService.updateNewSavedProcedurePointInformations(
+          savedUser,
           procedurePointInformationsResponseData,
           ProcedurePointInformationSaveStatusTypes.Lately,
           dispatch
@@ -130,26 +153,18 @@ function Login({ navigation }) {
 
       dispatch(setWordOfTheDay(randomWordOfTheDay.content));
 
-      toastService.showToast(SUCCESSFULLY_LOGGED_IN, {
-        type: "success",
-        placement: "top",
-      });
+      toastService.showToast(
+        SUCCESSFULLY_LOGGED_IN,
+        new ToastOptions(ToastTypes.Success)
+      );
 
-      const hasPermissionOfUsageStats = await UsageStats.checkForPermission();
+      const hasPermissionOfUsageStats =
+        await usageStatsService.checkForPermission();
 
       if (!hasPermissionOfUsageStats) {
         navigation.navigate("CheckPermissionForNewUser");
-      } else {
-        if (loggedInUserData.isNewUser) {
-          navigation.navigate(
-            "ExplanationOfSocialMediaAddictiveLevelIdentification"
-          );
-        } else {
-          navigation.navigate("App");
-        }
       }
     } catch (error) {
-      console.log(error);
       if (error.response) {
         const { data } = error.response;
 
@@ -217,7 +232,7 @@ function Login({ navigation }) {
         <View style={{ flex: 4 / 9 }}></View>
         <View style={{ flex: 2 / 9 }}>
           <Pressable
-            onPress={formik.handleSubmit}
+            onPress={async (e) => await formik.handleSubmit(e)}
             className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]"
           >
             <View className="flex flex-row items-center gap-10">

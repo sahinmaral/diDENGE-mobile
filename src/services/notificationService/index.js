@@ -29,8 +29,7 @@ class NotificationService {
 
     var foundNotification = filteredNotifications.find(
       (notification) =>
-        notification.time.isSame(currentTime, "hour") &&
-        notification.time.isSame(currentTime, "minute")
+        notification.time.isSame(currentTime, "hour") 
     );
 
     if (foundNotification) {
@@ -46,6 +45,7 @@ class NotificationService {
   }
 
   getDynamicNotificationContent(currentUser, notificationType) {
+
     const userProcedureName =
       currentUser.procedurePointInformation.current.procedure.name;
     const userFirstName = currentUser.firstName;
