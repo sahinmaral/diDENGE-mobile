@@ -1,3 +1,5 @@
+import { SOCIAL_MEDIA_SPENT_TIME_CHECK_INTERVAL } from "../..";
+
 const backgroundServiceNotificationOptions = {
   taskName: "diDENGEArtificialAgentBackgroundService",
   taskTitle: "diDENGE Sanal Asistan Arkaplan Servisi",

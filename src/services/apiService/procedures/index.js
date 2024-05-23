@@ -1,14 +1,15 @@
 import axios from "axios";
+import { API_URL } from '@env';
 
 const fetchGetProcedurePointInformationsByUserId = async (userId) => {
   return axios.get(
-    `${process.env.API_URL}/Procedures/GetProcedurePointInformationsByUserId/${userId}`
+    `${API_URL}/Procedures/GetProcedurePointInformationsByUserId/${userId}`
   );
 };
 
 const fetchAddOrUpdateProcedurePointInformations = async (requestBody) => {
   return axios.post(
-    `${process.env.API_URL}/Procedures/AddOrUpdateProcedurePointInformations`,
+    `${API_URL}/Procedures/AddOrUpdateProcedurePointInformations`,
     requestBody
   );
 };

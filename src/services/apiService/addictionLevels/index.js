@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_URL } from '@env';
 
 const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
   const config = {
@@ -6,7 +7,7 @@ const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
   };
 
   return axios.post(
-    `${process.env.API_URL}/AddictionLevels/SaveAddictionLevelOfUser`,
+    `${API_URL}/AddictionLevels/SaveAddictionLevelOfUser`,
     input,
     config
   );
@@ -14,7 +15,7 @@ const fetchSaveAddictionLevelOfUser = async (input, accessToken) => {
 
 const fetchGetAddictionLevelByUserId = async (userId) => {
   return axios.get(
-    `${process.env.API_URL}/AddictionLevels/GetByUserId/${userId}`
+    `${API_URL}/AddictionLevels/GetByUserId/${userId}`
   );
 };
 

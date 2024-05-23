@@ -42,10 +42,10 @@ function CheckPermissionForNewUser({ navigation }) {
   };
 
   useEffect(() => {
-    AppState.addEventListener("change", handleAppStateChange);
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
 
     return () => {
-      AppState.removeEventListener("change", handleAppStateChange);
+      subscription.remove();
     };
   }, []);
 
@@ -77,7 +77,7 @@ function CheckPermissionForNewUser({ navigation }) {
       <View className="flex-[1] justify-end">
         <Pressable
           onPress={() => {
-            UsageStats.showUsageAccessSettings("com.didenge");
+            usageStatsService.showUsageAccessSettings();
           }}
           className="flex flex-row justify-between items-center bg-darkJungleGreen rounded-md h-[50px] px-10"
         >

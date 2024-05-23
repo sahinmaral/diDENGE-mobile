@@ -4,26 +4,21 @@ import defaultUserImage from "../../../../assets/default-user.png";
 import { Pressable, Image, View, Text } from "react-native";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/slices/authSlice";
-import { useMemo } from "react";
 
 function UserProfileShort() {
   const user = useSelector(selectUser);
 
-  const userFullName = useMemo(() => {
-    if (user.middleName) {
-      return `${user.firstName} ${user.middleName} ${user.lastName}`;
-    } else {
-      return `${user.firstName} ${user.lastName}`;
-    }
-  }, [user]);
+  const userFullName = user
+    ? user.middleName
+      ? `${user.firstName} ${user.middleName} ${user.lastName}`
+      : `${user.firstName} ${user.lastName}`
+    : null;
 
-  const userProfileImage = useMemo(() => {
-    return user.profilePhotoURL
-      ? {
-          uri: `${process.env.CLOUDINARY_IMAGE_PATH}/${user.profilePhotoURL}`,
-        }
-      : defaultUserImage;
-  }, [user]);
+  const userProfileImage = user
+    ? user.profilePhotoURL
+      ? { uri: `${process.env.CLOUDINARY_IMAGE_PATH}/${user.profilePhotoURL}` }
+      : defaultUserImage
+    : defaultUserImage;
 
   return (
     <View className="flex flex-row justify-between items-center">

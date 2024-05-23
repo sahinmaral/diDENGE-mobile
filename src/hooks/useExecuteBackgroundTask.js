@@ -1,16 +1,23 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   APP_NAME,
   CLEAR_ALL_NOTIFICATION_INTERVAL,
   DAILY_LIMIT_EXCESSION_AMOUNT,
   PUSH_NOTIFICATION_INTERVAL,
+  SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY,
   getFirstPieceOfUserDailyLimitInterval,
   getSecondPieceOfUserDailyLimitInterval,
 } from "../constants";
 import BackgroundService from "react-native-background-actions";
 import ProcedurePointInformationSaveStatusTypes from "../enums/ProcedurePointInformationSaveStatusTypes";
 import { useDispatch } from "react-redux";
-import { refreshSpendTimeInterval } from "../redux/slices/appSlice";
+import {
+  refreshCommonNotificationInterval,
+  refreshSocialMediaAddictionLevelTestReminderInterval,
+  refreshSpendTimeInterval,
+  setCommonNotificationInterval,
+  setSocialMediaAddictionLevelTestReminderInterval,
+} from "../redux/slices/appSlice";
 import PushNotificationType from "../enums/PushNotificationType";
 import PushNotificationOptions from "../classes/PushNotificationOptions";
 import NetworkHandler from "../services/networkHandler";
@@ -24,12 +31,24 @@ import NearlyHalfOfSpendTimeDynamicNotificationStrategy from "../classes/dynamic
 import AfterAllOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/AfterAllOfSpendTimeDynamicNotificationStrategy";
 import NearlyAllOfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/NearlyAllOfSpendTimeDynamicNotificationStrategy";
 import FailedOfObeyingSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/FailedOfObeyingSpendTimeDynamicNotificationStrategy";
+import AfterHalfSpendTimeDynamicNotificationStrategy from "../classes/dynamicNotifications/AfterHalfOfSpendTimeDynamicNotificationStrategy";
 import * as LocalStorageKeys from "../constants/localStorageKeys";
 import ProcedureService from "../services/procedureService";
-import SocialMediaApplicationUsageDto from "../classes/socialMediaApplicationUsageDto";
+import SocialMediaApplicationUsageDto from "../classes/SocialMediaApplicationUsageDto";
 import AddOrUpdateProcedurePointInformationsRequestDto from "../classes/AddOrUpdateProcedurePointInformationsRequestDto";
 import AddSocialMediaApplicationUsagesRequestDto from "../classes/AddSocialMediaApplicationUsagesRequestDto";
-import { currentTime, sleep, startOfTheDay } from "../utils/timeUtils";
+import {
+  getCurrentTime,
+  differenceInDays,
+  getEveningTime,
+  getMiddleOfTheDayTime,
+  getMorningTime,
+  returnCurrentTimeHourAsCommonNotificationEnum,
+  returnCurrentTimeHourAsSocialMediaAddictionLevelTestReminderNotificationEnum,
+  sleep,
+  getStartOfTheDayTime,
+} from "../utils/timeUtils";
+import moment from "moment";
 
 const notificationService = new NotificationService();
 const networkHandler = new NetworkHandler();
@@ -37,21 +56,21 @@ const usageStatsService = new UsageStatsService();
 const localStorageService = new LocalStorageService();
 const procedureService = new ProcedureService();
 
-const useExecuteBackgroundTask = (user, spendTimeInterval) => {
+const useExecuteBackgroundTask = (
+  user,
+  spendTimeInterval,
+  commonNotificationInterval,
+  socialMediaAddictionLevelTestReminderInterval,
+  navigation
+) => {
   const dispatch = useDispatch();
 
   const spendTimeIntervalRef = useRef(spendTimeInterval);
   const userRef = useRef(user);
-
-  const currentUser = useMemo(() => {
-    userRef.current = user;
-    return userRef.current;
-  }, [user]);
-
-  const currentSpentTimeInterval = useMemo(() => {
-    spendTimeIntervalRef.current = spendTimeInterval;
-    return spendTimeIntervalRef.current;
-  }, [spendTimeInterval]);
+  const commonNotificationIntervalRef = useRef(commonNotificationInterval);
+  const socialMediaAddictionLevelTestReminderIntervalRef = useRef(
+    socialMediaAddictionLevelTestReminderInterval
+  );
 
   const handleExecuteBackgroundTask = async (taskDataArguments) => {
     const { delay } = taskDataArguments;
@@ -59,6 +78,8 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
         const isNetworkConnected =
           await networkHandler.checkNetworkConnection();
+
+        await checkAndRemindSocialMediaAddictionLevelTest();
 
         const socialMediaApplicationUsagesDto =
           await getSocialMediaApplicationUsages();
@@ -77,7 +98,9 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
         }
 
         handleSendCommonNotification();
-        await handleSendDynamicNotification(totalSpentTime);
+        await handleSendDynamicNotification(
+          socialMediaApplicationUsagesDto.totalSpentTimeOfSocialMediaApplicationsAsMinutes
+        );
         await sleep(delay);
       }
     });
@@ -92,6 +115,23 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
   };
 
   useEffect(() => {
+    spendTimeIntervalRef.current = spendTimeInterval;
+  }, [spendTimeInterval]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    commonNotificationIntervalRef.current = commonNotificationInterval;
+  }, [commonNotificationInterval]);
+
+  useEffect(() => {
+    socialMediaAddictionLevelTestReminderIntervalRef.current =
+      socialMediaAddictionLevelTestReminderInterval;
+  }, [socialMediaAddictionLevelTestReminderInterval]);
+
+  useEffect(() => {
     checkAndStartBackgroundService();
   }, []);
 
@@ -101,12 +141,16 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
       totalSpentTime,
       socialMediaApplicationUsages
     ) => {
+      const currentUser = userRef.current;
+
       const isCurrentTimeStartOfTheDay =
-        startOfTheDay.isSame(currentTime, "hour") &&
-        startOfTheDay.isSame(currentTime, "minute");
+        getStartOfTheDayTime().isSame(getCurrentTime(), "hour") &&
+        getStartOfTheDayTime().isSame(getCurrentTime(), "minute");
 
       if (isCurrentTimeStartOfTheDay) {
         dispatch(refreshSpendTimeInterval());
+        dispatch(refreshCommonNotificationInterval());
+        dispatch(refreshSocialMediaAddictionLevelTestReminderInterval());
 
         const currentProcedurePointInformationGrade =
           procedureService.calculateCurrentProcedurePointInformationGrade(
@@ -184,26 +228,48 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
     };
 
   const handleSendCommonNotification = () => {
+    const currentUser = userRef.current;
+
     const foundNotificationContent =
       notificationService.getCommonNotificationContent(
         currentUser,
-        currentTime
+        getCurrentTime()
       );
 
     if (foundNotificationContent) {
-      notificationService.sendNotification(
-        new PushNotificationOptions({
-          type: PushNotificationType.Normal,
-          date: new Date(Date.now() + 2000),
-          title: APP_NAME,
-          message: foundNotificationContent.message,
-        })
-      );
+      const commonNotificationIntervalEnum =
+        returnCurrentTimeHourAsCommonNotificationEnum();
+      const currentCommonNotificationInterval =
+        commonNotificationIntervalRef.current;
+
+      const hasCommonNotificationExecutedBefore =
+        currentCommonNotificationInterval[commonNotificationIntervalEnum];
+
+      if (!hasCommonNotificationExecutedBefore) {
+        dispatch(
+          setCommonNotificationInterval({
+            ...currentCommonNotificationInterval,
+            [commonNotificationIntervalEnum]: true,
+          })
+        );
+
+        notificationService.sendNotification(
+          new PushNotificationOptions({
+            channelId: PushNotificationType.Normal,
+            date: new Date(Date.now() + 2000),
+            message: foundNotificationContent.message,
+          })
+        );
+      }
     }
   };
 
   const handleSendDynamicNotification = async (totalSpentTime) => {
+    const currentUser = userRef.current;
+    const currentSpentTimeInterval = spendTimeIntervalRef.current;
     const userDailyLimit = currentUser.addictionLevel.dailyLimit;
+
+    const halfOfUserDailyLimit = userDailyLimit / 2;
 
     const firstPieceOfFirstPositiveInterval =
       getFirstPieceOfUserDailyLimitInterval(userDailyLimit);
@@ -226,14 +292,16 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
 
     const afterHalfOfSpendTimeStrategy = {
       condition:
-        totalSpentTime > intervalValue &&
-        totalSpentTime <= intervalValue + secondPieceFirstPositiveInterval,
-      strategy: AfterAllOfSpendTimeDynamicNotificationStrategy,
+        totalSpentTime > halfOfUserDailyLimit &&
+        totalSpentTime <=
+          halfOfUserDailyLimit + secondPieceFirstPositiveInterval,
+      strategy: AfterHalfSpendTimeDynamicNotificationStrategy,
     };
 
     const nearlyAllOfSpendTimeStrategy = {
       condition:
-        totalSpentTime > intervalValue + secondPieceFirstPositiveInterval * 9 &&
+        totalSpentTime >
+          halfOfUserDailyLimit + secondPieceFirstPositiveInterval * 9 &&
         totalSpentTime <= userDailyLimit,
       strategy: NearlyAllOfSpendTimeDynamicNotificationStrategy,
     };
@@ -262,16 +330,17 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
 
     for (const { condition, strategy } of strategies) {
       if (condition) {
+        const notificationStrategy = new strategy(
+          currentUser,
+          dispatch,
+          currentSpentTimeInterval,
+          notificationService
+        );
+
         const hasStrategyExecutedBefore =
-          currentSpentTimeInterval[strategy.type];
+          currentSpentTimeInterval[notificationStrategy.type];
 
         if (!hasStrategyExecutedBefore) {
-          const notificationStrategy = new strategy(
-            currentUser,
-            dispatch,
-            currentSpentTimeInterval,
-            notificationService
-          );
           notificationStrategy.execute();
           break;
         }
@@ -282,8 +351,8 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
   const getSocialMediaApplicationUsages = async () => {
     const allSocialMediaApplicationUsages =
       await usageStatsService.getUsageStats(
-        startOfTheDay.valueOf(),
-        currentTime.valueOf()
+        getStartOfTheDayTime().valueOf(),
+        getCurrentTime().valueOf()
       );
 
     // FIX: Sosyal medya uygulamalari ön planda calisirken kullanım süresi değişmiyor fakat arkaplana alınca süre güncelleniyor.
@@ -309,6 +378,7 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
   };
 
   const checkIfAnyLocalDataHasToBeUpdated = async () => {
+    const currentUser = userRef.current;
     const localProcedurePointInformation = await localStorageService.getObject(
       LocalStorageKeys.PROCEDURE_POINT_INFORMATION
     );
@@ -334,7 +404,6 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
         notificationService.sendNotification({
           type: PushNotificationType.Silent,
           date: new Date(Date.now() + PUSH_NOTIFICATION_INTERVAL),
-          title: APP_NAME,
           message: "Kullanım süreleriniz kaydediliyor ...",
         });
 
@@ -374,6 +443,69 @@ const useExecuteBackgroundTask = (user, spendTimeInterval) => {
       } finally {
         clearAllNotifications();
       }
+    }
+  };
+
+  const checkAndRemindSocialMediaAddictionLevelTest = async () => {
+    const currentUser = userRef.current;
+
+    const currentSocialMediaAddictionLevelTestReminderInterval =
+      socialMediaAddictionLevelTestReminderIntervalRef.current;
+
+    const differenceBetweenDates = differenceInDays(
+      getCurrentTime(),
+      moment(currentUser.addictionLevel.createdAt)
+    );
+
+    console.log(`differenceBetweenDates : ${differenceBetweenDates}`);
+    console.log("-------");
+
+    if (
+      differenceBetweenDates ===
+      SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY
+    ) {
+      if (
+        getCurrentTime().isSame(getMorningTime().add(1, "hours"), "hours") ||
+        getCurrentTime().isSame(
+          getMiddleOfTheDayTime().add(1, "hours"),
+          "hours"
+        ) ||
+        getCurrentTime().isSame(getEveningTime().add(1, "hours"), "hours")
+      ) {
+        const socialMediaAddictionLevelTestReminderIntervalEnum =
+          returnCurrentTimeHourAsSocialMediaAddictionLevelTestReminderNotificationEnum();
+
+        const hasSocialMediaAddictionLevelTestReminderNotificationExecutedBefore =
+          currentSocialMediaAddictionLevelTestReminderInterval[
+            socialMediaAddictionLevelTestReminderIntervalEnum
+          ];
+        if (
+          !hasSocialMediaAddictionLevelTestReminderNotificationExecutedBefore
+        ) {
+          dispatch(
+            setSocialMediaAddictionLevelTestReminderInterval({
+              ...currentSocialMediaAddictionLevelTestReminderInterval,
+              [socialMediaAddictionLevelTestReminderIntervalEnum]: true,
+            })
+          );
+          notificationService.sendNotification(
+            new PushNotificationOptions({
+              channelId: PushNotificationType.Normal,
+              date: new Date(Date.now() + 2000),
+              message:
+                "Bugün içerisinde sosyal medya bağımlılık seviye testini çözmen gerekiyor. Aksi taktirde oturumun sonlandırılacak.",
+            })
+          );
+        }
+      }
+    } else if (
+      differenceBetweenDates >
+      SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY
+    ) {
+      navigation.navigate("LoggedOut", {
+        message:
+          "Sosyal medya bağımlılık seviye testini çözmediğin için oturum sonlandırılıyor",
+      });
     }
   };
 };

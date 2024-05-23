@@ -9,7 +9,7 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload;
+      state.user = { ...action.payload};
     },
     clearUser: (state) => {
       state.user = null;
@@ -17,7 +17,7 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser,clearUser } = authSlice.actions;
 
 export const selectUser = (state) => state.auth.user;
 

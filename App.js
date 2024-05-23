@@ -13,6 +13,7 @@ import CheckPermissionForNewUser from "./src/screens/CheckPermissionForNewUser";
 import ResultOfAddictiveLevel from "./src/screens/ResultOfAddictiveLevel";
 import AppTabNavigatorRoutes from "./src/routes/AppTabNavigationRoutes";
 import ContinueRegister from "./src/screens/Register/ContinueRegister";
+import LoggedOut from './src/screens/LoggedOut'
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -28,6 +29,7 @@ export default function App() {
           >
             <Stack.Screen name="Register" component={Register} />
             <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="LoggedOut" component={LoggedOut} />
             <Stack.Screen
               name="SocialMediaAddictiveLevelIdentification"
               component={SocialMediaAddictiveLevelIdentification}

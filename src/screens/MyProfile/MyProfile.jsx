@@ -6,9 +6,9 @@ import defaultUserImage from "../../../assets/default-user.png";
 import { useDispatch, useSelector } from "react-redux";
 import { setModalContent } from "../../redux/slices/modalSlice";
 import ModalContentTypes from "../../enums/ModalContentTypes";
-import { selectUser, setUser } from "../../redux/slices/authSlice";
+import { selectUser } from "../../redux/slices/authSlice";
 import { useMemo } from "react";
-import BackgroundService from "react-native-background-actions"; 
+
 
 function MyProfile({ navigation }) {
   const dispatch = useDispatch();
@@ -35,10 +35,8 @@ function MyProfile({ navigation }) {
       : defaultUserImage;
   }, [user]);
 
-  const logout = async () => {
-    dispatch(setUser(null));
-    navigation.navigate("Login");
-    await BackgroundService.stop()
+  const logout = () => {
+    navigation.navigate("LoggedOut");
   }
 
   return (

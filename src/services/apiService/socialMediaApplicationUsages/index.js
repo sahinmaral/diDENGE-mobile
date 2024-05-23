@@ -1,25 +1,24 @@
 import axios from "axios";
+import { API_URL } from "@env";
 
 const fetchAddSocialMediaApplicationUsages = async (input) => {
-  return axios.post(
-    `${process.env.API_URL}/SocialMediaApplicationUsages`,
-    input
-  );
+  return axios.post(`${API_URL}/SocialMediaApplicationUsages`, input);
 };
 
-const fetchGetSocialMediaApplicationUsagesByStartTime = async (
+const fetchGetSocialMediaApplicationUsagesByStartAndEndTime = async (
   userId,
-  startTime
+  startTime,
+  endTime
 ) => {
   return axios.get(
-    `${process.env.API_URL}/SocialMediaApplicationUsages/GetSocialMediaApplicationUsagesByStartTime`,
+    `${API_URL}/SocialMediaApplicationUsages/GetSocialMediaApplicationUsagesByStartAndEndTime`,
     {
-      params: { userId, startTime },
+      params: { userId, startTime, endTime },
     }
   );
 };
 
 export {
-  fetchGetSocialMediaApplicationUsagesByStartTime,
+  fetchGetSocialMediaApplicationUsagesByStartAndEndTime,
   fetchAddSocialMediaApplicationUsages,
 };

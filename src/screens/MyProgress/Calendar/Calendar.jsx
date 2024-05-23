@@ -5,54 +5,14 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useState } from "react";
 import { View } from "react-native";
-import { LocaleConfig, Calendar } from "react-native-calendars";
+import { Calendar } from "react-native-calendars";
+import { setCalendarLocale } from "../../../constants/calendarLocale";
 
-LocaleConfig.locales["tr"] = {
-  monthNames: [
-    "Ocak",
-    "Şubat",
-    "Mart",
-    "Nisan",
-    "Mayıs",
-    "Haziran",
-    "Temmuz",
-    "Ağustos",
-    "Eylül",
-    "Ekim",
-    "Kasım",
-    "Aralık",
-  ],
-  monthNamesShort: [
-    "Oca.",
-    "Şub.",
-    "Mar.",
-    "Nis.",
-    "May.",
-    "Haz.",
-    "Tem.",
-    "Ağu.",
-    "Eyl.",
-    "Eki.",
-    "Kas.",
-    "Ara.",
-  ],
-  dayNames: [
-    "Pazar",
-    "Pazartesi",
-    "Salı",
-    "Çarşamba",
-    "Perşembe",
-    "Cuma",
-    "Cumartesi",
-  ],
-  dayNamesShort: ["Paz.", "Pzt.", "Sal.", "Çar.", "Per.", "Cum.", "Cmt."],
-};
-
-LocaleConfig.defaultLocale = "tr";
-
-const CalendarComponent = () => {
+const CalendarComponent = ({ navigation }) => {
   const [currentMonth] = useState(new Date().getMonth() + 1);
   const [updatedMonth, setUpdatedMonth] = useState(new Date().getMonth() + 1);
+
+  setCalendarLocale();
 
   const renderCustomArrow = (direction) => {
     if (direction === "left") {
@@ -69,7 +29,8 @@ const CalendarComponent = () => {
   };
 
   const onDayPress = (date) => {
-    console.log(date);
+    const selectedDate = new Date(date.dateString).toDateString()
+    navigation.navigate("Statistics", { selectedDate });
   };
 
   const onMonthChange = (date) => {

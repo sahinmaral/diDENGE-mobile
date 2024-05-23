@@ -1,5 +1,6 @@
 const ModalContentTypes = {
   VerifyCloseApp: "VerifyCloseApp",
+  VerifyExitSocialMediaAddictionLevelIdentification: "VerifyExitSocialMediaAddictionLevelIdentification",
   UpdateNameSurname: "UpdateNameSurname",
   UpdatePassword: "UpdatePassword",
   UpdateProfileImage: "UpdateProfileImage",
