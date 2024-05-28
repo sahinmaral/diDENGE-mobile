@@ -36,9 +36,9 @@ function UpdatePasswordModalContent() {
 
   const formik = useFormik({
     initialValues: {
-      oldPassword: "Abc1234.",
-      newPassword: "Abc1234?",
-      newPasswordConfirm: "Abc1234?",
+      oldPassword: "",
+      newPassword: "",
+      newPasswordConfirm: "",
     },
     validationSchema: UpdatePasswordSchema,
     onSubmit: (values) => handleSubmit(values),
@@ -60,9 +60,7 @@ function UpdatePasswordModalContent() {
           }
         );
 
-        setUser(null);
-
-        navigation.navigate("Login");
+        navigation.navigate("LoggedOut");
       })
       .catch((error) => {
         if (error.response) {

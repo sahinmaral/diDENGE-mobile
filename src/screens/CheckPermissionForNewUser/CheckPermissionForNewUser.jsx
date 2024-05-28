@@ -11,12 +11,13 @@ import UsageStatsService from "../../services/usageStatsService";
 import ToastService from "../../services/toastService";
 import ToastOptions from "../../classes/ToastOptions";
 import ToastTypes from "../../enums/ToastTypes";
+import { selectUser } from "../../redux/slices/authSlice";
 
 function CheckPermissionForNewUser({ navigation }) {
   const [isUsageStatPermissionGranted, setIsUsageStatPermissionGranted] =
     useState(false);
 
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector(selectUser);
 
   const toast = useToast();
 
@@ -42,7 +43,10 @@ function CheckPermissionForNewUser({ navigation }) {
   };
 
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
 
     return () => {
       subscription.remove();
@@ -51,12 +55,18 @@ function CheckPermissionForNewUser({ navigation }) {
 
   useEffect(() => {
     if (isUsageStatPermissionGranted) {
-      const screenToNavigate = user.isNewUser
-        ? "ExplanationOfSocialMediaAddictiveLevelIdentification"
-        : "App";
-      navigation.navigate(screenToNavigate);
+      if (user.isNewUser) {
+        navigation.navigate(
+          "ExplanationOfSocialMediaAddictiveLevelIdentification",
+          {
+            userAddictionLevelData: null,
+          }
+        );
+      } else {
+        navigation.navigate("App");
+      }
     }
-  }, [isUsageStatPermissionGranted, navigation, user.isNewUser]);
+  }, [isUsageStatPermissionGranted, navigation, user]);
 
   return (
     <Container customClasses="px-4 py-12">

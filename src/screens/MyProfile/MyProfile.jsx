@@ -9,7 +9,6 @@ import ModalContentTypes from "../../enums/ModalContentTypes";
 import { selectUser } from "../../redux/slices/authSlice";
 import { useMemo } from "react";
 
-
 function MyProfile({ navigation }) {
   const dispatch = useDispatch();
 
@@ -20,24 +19,26 @@ function MyProfile({ navigation }) {
   const user = useSelector(selectUser);
 
   const userFullName = useMemo(() => {
-    if (user.middleName) {
-      return `${user.firstName} ${user.middleName} ${user.lastName}`;
-    } else {
-      return `${user.firstName} ${user.lastName}`;
-    }
+    return user
+      ? user.middleName
+        ? `${user.firstName} ${user.middleName} ${user.lastName}`
+        : `${user.firstName} ${user.lastName}`
+      : null;
   }, [user]);
 
   const userProfileImage = useMemo(() => {
-    return user.profilePhotoURL
-      ? {
-          uri: `https://res.cloudinary.com/sahinmaral/${user.profilePhotoURL}`,
-        }
+    return user
+      ? user.profilePhotoURL
+        ? {
+            uri: `https://res.cloudinary.com/sahinmaral/${user.profilePhotoURL}`,
+          }
+        : defaultUserImage
       : defaultUserImage;
   }, [user]);
 
   const logout = () => {
     navigation.navigate("LoggedOut");
-  }
+  };
 
   return (
     <Container customClasses="px-4">
@@ -49,7 +50,7 @@ function MyProfile({ navigation }) {
         />
         <View className="flex flex-col">
           <Text className="text-xl text-white font-medium">{userFullName}</Text>
-          <Text className="text-saffronMango">{user.email}</Text>
+          <Text className="text-saffronMango">{user?.email}</Text>
         </View>
       </View>
       <View className="flex-[0.5]"></View>
@@ -85,10 +86,7 @@ function MyProfile({ navigation }) {
           header="Odak Modu Ayarla"
           onPress={() => handlePressMenuItem(ModalContentTypes.SetFocusMode)}
         />
-        <MenuItem
-          header="Çıkış Yap"
-          onPress={logout}
-        />
+        <MenuItem header="Çıkış Yap" onPress={logout} />
       </View>
     </Container>
   );
