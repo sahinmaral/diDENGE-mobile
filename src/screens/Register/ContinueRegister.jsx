@@ -38,9 +38,9 @@ function ContinueRegister({ navigation, route }) {
   const formik = useFormik({
     initialValues: {
       ...requiredInformations,
-      birthDate: new Date("2000-01-01"),
-      phoneNumber: "5385526462",
-      userName: "sahinmaral",
+      birthDate: new Date(),
+      phoneNumber: "",
+      userName: "",
     },
     validationSchema: ContinueRegisterUserSchema,
     onSubmit: (values) => handleSubmit(values),

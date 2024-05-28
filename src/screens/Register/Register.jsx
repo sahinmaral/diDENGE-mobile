@@ -39,11 +39,11 @@ function Register({ navigation }) {
   const formik = useFormik({
     validationSchema: RegisterUserSchema,
     initialValues: {
-      firstName: "Şahin",
-      lastName: "MARAL",
-      email: "sahin.maral@hotmail.com",
-      password: "Abc1234.",
-      passwordConfirm: "Abc1234.",
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      passwordConfirm: "",
     },
     onSubmit: (values) => {
       handleSubmit(values);

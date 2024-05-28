@@ -25,11 +25,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import android.os.Handler
+import android.os.Looper
 
 
 class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     companion object {
         private lateinit var reactContext: ReactApplicationContext
+        private const val UPDATE_INTERVAL = 1000L
     }
 
     init {
@@ -64,9 +67,9 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
 
         val usageTimeOfApps: MutableMap<String, Long> = HashMap()
         val usageCountOfApps: MutableMap<String, Int> = HashMap()
-        val prev: MutableMap<String, Long> = HashMap() // Initialize prev map
+        val prev: MutableMap<String, Long> = HashMap()
+        val isAppForeground: MutableMap<String, Boolean> = HashMap()
 
-        // Initialize usage time and count maps
         val socialMediaApps = listOf(
             "com.whatsapp", "com.instagram.android", "com.facebook.katana",
             "com.twitter.android", "com.snapchat.android", "com.linkedin.android",
@@ -77,29 +80,48 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
         for (packageName in socialMediaApps) {
             usageTimeOfApps[packageName] = 0L
             usageCountOfApps[packageName] = 0
-            prev[packageName] = -1L // Initialize prev for each app
+            prev[packageName] = -1L
+            isAppForeground[packageName] = false
         }
 
+        val handler = Handler(Looper.getMainLooper())
         val usageEvents: UsageEvents = usageStatsManager.queryEvents(startTime.toLong(), endTime.toLong())
+
         while (usageEvents.hasNextEvent()) {
             val event = UsageEvents.Event()
             usageEvents.getNextEvent(event)
             val currPackageName = event.packageName
             if (usageTimeOfApps.containsKey(currPackageName)) {
-                if (event.eventType == 1) {
-                    // Application opened
+                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
                     val count = usageCountOfApps[currPackageName] ?: 0
                     usageCountOfApps[currPackageName] = count + 1
-                    prev[currPackageName] = event.timeStamp // Update prev for this app
-                } else if (event.eventType == 2) {
-                    // Application closed
+                    prev[currPackageName] = event.timeStamp
+                    isAppForeground[currPackageName] = true
+                } else if (event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
                     if (prev[currPackageName] != -1L) {
                         val time = usageTimeOfApps[currPackageName]!! + (event.timeStamp - prev[currPackageName]!!)
                         usageTimeOfApps[currPackageName] = time
+                        prev[currPackageName] = -1L
+                        isAppForeground[currPackageName] = false
                     }
                 }
             }
         }
+
+        val runnable = object : Runnable {
+            override fun run() {
+                val currentTime = System.currentTimeMillis()
+                for (packageName in socialMediaApps) {
+                    if (isAppForeground[packageName] == true && prev[packageName] != -1L) {
+                        val time = usageTimeOfApps[packageName]!! + (currentTime - prev[packageName]!!)
+                        usageTimeOfApps[packageName] = time
+                        prev[packageName] = currentTime
+                    }
+                }
+                handler.postDelayed(this, UPDATE_INTERVAL)
+            }
+        }
+        handler.post(runnable)
 
         val result: WritableMap = WritableNativeMap()
 
@@ -111,7 +133,7 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
                 val totalTimeInSeconds = us.value / 1000
                 val totalCount = usageCountOfApps[us.key] ?: 0
                 usageStats.putDouble("totalTimeInForeground", totalTimeInSeconds.toDouble())
-                usageStats.putInt("openCount", totalCount/2)
+                usageStats.putInt("openCount", totalCount)
                 result.putMap(us.key, usageStats)
             }
         }
@@ -175,20 +197,5 @@ class UsageStatsModule(reactContext: ReactApplicationContext) : ReactContextBase
 
         promise.resolve(mode == AppOpsManager.MODE_ALLOWED)
     }
-
-
-
-    private fun sendEvent(packageName: String, totalTimeInForeground: Long) {
-        if (reactContext.hasActiveCatalystInstance()) {
-            val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            sdf.timeZone = TimeZone.getTimeZone("UTC")
-            val formattedTime = sdf.format(Date(totalTimeInForeground))
-
-            reactContext
-                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                    .emit("UsageStatsEvent", "$packageName: $formattedTime")
-        }
-    }
-
 
 }

@@ -274,23 +274,25 @@ function Statistics({ updateCurrentScreen }) {
             />
           ) : null}
 
-          <View className="h-[500]">
-            <ChartLoader chartJsCode={dailyResultPerApplicationGraphJsCode} />
+          {fetchResult.data.applicatedBased.length > 0 ? (
+            <View className="h-[500]">
+              <ChartLoader chartJsCode={dailyResultPerApplicationGraphJsCode} />
 
-            <ScrollView nestedScrollEnabled={true} className="h-[100]">
-              {fetchResult.data.applicatedBased.map((result) => {
-                return (
-                  <DailyResultApplicationMenuItem
-                    key={result.name}
-                    name={result.name}
-                    color={result.color}
-                    spentTime={result.spentTime}
-                    openingCount={result.openingCount}
-                  />
-                );
-              })}
-            </ScrollView>
-          </View>
+              <ScrollView nestedScrollEnabled={true} className="h-[100]">
+                {fetchResult.data.applicatedBased.map((result) => {
+                  return (
+                    <DailyResultApplicationMenuItem
+                      key={result.name}
+                      name={result.name}
+                      color={result.color}
+                      spentTime={result.spentTime}
+                      openingCount={result.openingCount}
+                    />
+                  );
+                })}
+              </ScrollView>
+            </View>
+          ) : null}
         </ScrollView>
       ) : null}
     </Container>

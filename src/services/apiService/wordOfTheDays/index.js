@@ -1,8 +1,9 @@
 import axios from "axios";
-import { API_URL } from '@env';
+import { API_URL } from "@env";
 
 const fetchGetRandomWordOfTheDay = async () => {
-  return axios.get(`${API_URL}/WordOfTheDays/GetByRandom`);
+  const url = `${API_URL}/WordOfTheDays/GetByRandom`;
+  return axios.get(url);
 };
 
 export { fetchGetRandomWordOfTheDay };

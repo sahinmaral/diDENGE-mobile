@@ -2,7 +2,8 @@ import axios from "axios";
 import { API_URL } from "@env";
 
 const fetchAddSocialMediaApplicationUsages = async (input) => {
-  return axios.post(`${API_URL}/SocialMediaApplicationUsages`, input);
+  const url = `${API_URL}/SocialMediaApplicationUsages`
+  return axios.post(url, input);
 };
 
 const fetchGetSocialMediaApplicationUsagesByStartAndEndTime = async (
@@ -10,12 +11,10 @@ const fetchGetSocialMediaApplicationUsagesByStartAndEndTime = async (
   startTime,
   endTime
 ) => {
-  return axios.get(
-    `${API_URL}/SocialMediaApplicationUsages/GetSocialMediaApplicationUsagesByStartAndEndTime`,
-    {
-      params: { userId, startTime, endTime },
-    }
-  );
+  const url = `${API_URL}/SocialMediaApplicationUsages/GetSocialMediaApplicationUsagesByStartAndEndTime`;
+  return axios.get(url, {
+    params: { userId, startTime, endTime },
+  });
 };
 
 export {

@@ -51,8 +51,8 @@ function Login({ navigation }) {
 
   const formik = useFormik({
     initialValues: {
-      email: "sahin.maral@hotmail.com",
-      password: "Abc1234.",
+      email: "",
+      password: "",
     },
     validationSchema: LoginUserSchema,
     onSubmit: async (values) => await handleSubmit(values),
@@ -76,33 +76,42 @@ function Login({ navigation }) {
   };
 
   useEffect(() => {
-    if (user !== null) {
-      const timeOfLatestSocialMediaAddictionLevelTest = differenceInDays(
-        getCurrentTime(),
-        moment(user.addictionLevel.createdAt)
-      );
+    (async () => {
+      const hasPermissionOfUsageStats =
+        await usageStatsService.checkForPermission();
 
-      if (
-        timeOfLatestSocialMediaAddictionLevelTest >=
-        SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY
-      ) {
-        navigation.navigate(
-          "ExplanationOfSocialMediaAddictiveLevelIdentification",
-          {
-            userAddictionLevelData: user.addictionLevel,
+      if (user !== null) {
+        if (!hasPermissionOfUsageStats) {
+          navigation.navigate("CheckPermissionForNewUser");
+        } else {
+          const timeOfLatestSocialMediaAddictionLevelTest = differenceInDays(
+            getCurrentTime(),
+            moment(user.addictionLevel.createdAt)
+          );
+
+          if (
+            timeOfLatestSocialMediaAddictionLevelTest >=
+            SOCIAL_MEDIA_ADDICTION_LEVEL_IDENTIFICATION_TEST_REPEAT_DAY
+          ) {
+            navigation.navigate(
+              "ExplanationOfSocialMediaAddictiveLevelIdentification",
+              {
+                userAddictionLevelData: user.addictionLevel,
+              }
+            );
+          } else if (user.isNewUser) {
+            navigation.navigate(
+              "ExplanationOfSocialMediaAddictiveLevelIdentification",
+              {
+                userAddictionLevelData: null,
+              }
+            );
+          } else {
+            navigation.navigate("App");
           }
-        );
-      } else if (user.isNewUser) {
-        navigation.navigate(
-          "ExplanationOfSocialMediaAddictiveLevelIdentification",
-          {
-            userAddictionLevelData: null,
-          }
-        );
-      } else {
-        navigation.navigate("App");
+        }
       }
-    }
+    })();
   }, [user]);
 
   useEffect(() => {
@@ -157,14 +166,8 @@ function Login({ navigation }) {
         SUCCESSFULLY_LOGGED_IN,
         new ToastOptions(ToastTypes.Success)
       );
-
-      const hasPermissionOfUsageStats =
-        await usageStatsService.checkForPermission();
-
-      if (!hasPermissionOfUsageStats) {
-        navigation.navigate("CheckPermissionForNewUser");
-      }
     } catch (error) {
+      console.log(JSON.stringify(error));
       if (error.response) {
         const { data } = error.response;
 

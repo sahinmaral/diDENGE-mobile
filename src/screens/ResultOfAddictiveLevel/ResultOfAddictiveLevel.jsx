@@ -51,9 +51,11 @@ function ResultOfAddictiveLevel({ route, navigation }) {
             yer alan <Text className="font-bold">"{addictionLevel}" </Text>
             seviye olduğunuz tespit edilmiştir. Günlük sosyal meda kullanım
             limitiniz <Text className="font-bold">{dailyLimit}</Text> dakikadır.
-            Bağımlılığınızı yenebilmek adına bu süreyi aşmamanız gerekir, her 21
-            günde bir sizin bağımlılık seviyenizi ölçüyor olacağız.{" "}
-            <Text className="font-bold">Hazırsanız başlayalım.</Text>
+            Bağımlılığınızı yenebilmek adına bu süreyi aşmamanız gerekir, her{" "}
+            <Text className="font-bold">21 günde bir </Text>sizin bağımlılık
+            seviyenizi ölçüyor olacağız. Kendinizi hazırlamak adına{" "}
+            <Text className="font-bold">bugünü pas geçiyoruz. </Text>Ama yarın
+            sizleri hazır olarak görmek isteriz. O zaman hadi başlayalım.
           </Text>
         </View>
       </View>

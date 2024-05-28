@@ -1,5 +1,5 @@
 import { NativeModules } from "react-native";
-import * as LocalStorageKeys from '../../constants/localStorageKeys'
+import * as LocalStorageKeys from "../../constants/localStorageKeys";
 import { APP_PLAYSTORE_NAME } from "../../constants";
 
 const { UsageStats } = NativeModules;
@@ -9,11 +9,11 @@ class UsageStatsService {
     return await UsageStats.getUsageStats(startTime, endTime);
   }
 
-  async checkForPermission(){
+  async checkForPermission() {
     return await UsageStats.checkForPermission();
   }
 
-  async showUsageAccessSettings(){
+  async showUsageAccessSettings() {
     return await UsageStats.showUsageAccessSettings(APP_PLAYSTORE_NAME);
   }
 

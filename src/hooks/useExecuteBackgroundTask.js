@@ -47,6 +47,7 @@ import {
   returnCurrentTimeHourAsSocialMediaAddictionLevelTestReminderNotificationEnum,
   sleep,
   getStartOfTheDayTime,
+  isSameDateWithCurrentDate,
 } from "../utils/timeUtils";
 import moment from "moment";
 
@@ -74,8 +75,15 @@ const useExecuteBackgroundTask = (
 
   const handleExecuteBackgroundTask = async (taskDataArguments) => {
     const { delay } = taskDataArguments;
-    await new Promise(async (resolve) => {
+    await new Promise(async () => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
+        const isUserReadyForUsingApp = isSameDateWithCurrentDate(user.addictionLevel.createdAt)
+
+        if(!isUserReadyForUsingApp){
+          await sleep(delay);
+          continue;
+        }
+
         const isNetworkConnected =
           await networkHandler.checkNetworkConnection();
 
@@ -355,7 +363,6 @@ const useExecuteBackgroundTask = (
         getCurrentTime().valueOf()
       );
 
-    // FIX: Sosyal medya uygulamalari ön planda calisirken kullanım süresi değişmiyor fakat arkaplana alınca süre güncelleniyor.
     const totalSpentTimeOfSocialMediaApplications =
       usageStatsService.getTotalSpentTimeOfSocialMediaApplications(
         allSocialMediaApplicationUsages
@@ -456,9 +463,6 @@ const useExecuteBackgroundTask = (
       getCurrentTime(),
       moment(currentUser.addictionLevel.createdAt)
     );
-
-    console.log(`differenceBetweenDates : ${differenceBetweenDates}`);
-    console.log("-------");
 
     if (
       differenceBetweenDates ===

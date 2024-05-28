@@ -1,16 +1,14 @@
 import axios from "axios";
-import { API_URL } from '@env';
+import { API_URL } from "@env";
 
 const fetchUpdateNameSurname = async (values, userId, accessToken) => {
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
-  return axios.put(
-    `${API_URL}/Users/UpdateNameSurname/${userId}`,
-    values,
-    config
-  );
+  const url = `${API_URL}/Users/UpdateNameSurname/${userId}`;
+
+  return axios.put(url, values, config);
 };
 
 const fetchUpdatePassword = async (values, userId, accessToken) => {
@@ -18,11 +16,9 @@ const fetchUpdatePassword = async (values, userId, accessToken) => {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
-  return axios.put(
-    `${API_URL}/Users/UpdatePassword/${userId}`,
-    values,
-    config
-  );
+  const url = `${API_URL}/Users/UpdatePassword/${userId}`;
+
+  return axios.put(url, values, config);
 };
 
 const fetchUpdateProfileImage = async (values, userId, accessToken) => {
@@ -33,11 +29,9 @@ const fetchUpdateProfileImage = async (values, userId, accessToken) => {
     },
   };
 
-  return axios.put(
-    `${API_URL}/Users/UpdateProfileImage/${userId}`,
-    values,
-    config
-  );
+  const url = `${API_URL}/Users/UpdateProfileImage/${userId}`;
+
+  return axios.put(url, values, config);
 };
 
 const fetchDeleteProfileImage = async (userId, accessToken) => {
@@ -47,10 +41,9 @@ const fetchDeleteProfileImage = async (userId, accessToken) => {
     },
   };
 
-  return axios.delete(
-    `${API_URL}/Users/DeleteProfileImage/${userId}`,
-    config
-  );
+  const url = `${API_URL}/Users/DeleteProfileImage/${userId}`
+
+  return axios.delete(url, config);
 };
 
 export {

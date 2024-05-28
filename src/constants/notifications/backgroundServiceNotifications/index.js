@@ -6,12 +6,12 @@ const backgroundServiceNotificationOptions = {
   taskDesc:
     "diDENGE, sosyal medya kullanımını dengelemek için arka planda çalışan bir uygulamadır.",
   taskIcon: {
-    name: "ic_launcher",
+    name: "ic_notification",
     type: "mipmap",
   },
   linkingURI: "diDENGE://",
   parameters: {
-    delay: 1000,
+    delay: SOCIAL_MEDIA_SPENT_TIME_CHECK_INTERVAL,
   },
 };
 
