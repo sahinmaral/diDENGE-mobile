@@ -4,9 +4,11 @@ import defaultUserImage from "../../../../assets/default-user.png";
 import { Pressable, Image, View, Text } from "react-native";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/slices/authSlice";
+import { useNavigation } from '@react-navigation/native';
 
 function UserProfileShort() {
   const user = useSelector(selectUser);
+  const navigation = useNavigation()
 
   const userFullName = user
     ? user.middleName

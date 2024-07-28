@@ -6513,6 +6513,11 @@ react-native-open-notification@^0.1.4:
   resolved "https://registry.npmjs.org/react-native-open-notification/-/react-native-open-notification-0.1.4.tgz"
   integrity sha512-TPeFRsao6nDFW5nvBseD6nheRCN1U3poaY90iDzBY1MEEVepClqfEC9Iw0cqj7LYnpDSF8V25fb/SpjEg3HdQQ==
 
+react-native-otp-entry@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/react-native-otp-entry/-/react-native-otp-entry-1.7.0.tgz"
+  integrity sha512-ENUahempFIrvE92QusUUcZlAynT6hSyFWpLLbiOTGKkHPVWQNHFJDOAX7+eyi4/3+V4bHZLPVizY7eEEtwPslA==
+
 react-native-permissions@^4.1.4:
   version "4.1.4"
   resolved "https://registry.npmjs.org/react-native-permissions/-/react-native-permissions-4.1.4.tgz"

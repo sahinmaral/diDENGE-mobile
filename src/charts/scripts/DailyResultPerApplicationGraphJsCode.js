@@ -57,7 +57,9 @@ Highcharts.chart("container", {
   },
   tooltip: {
     headerFormat: "<b>{series.name}</b><br/>",
-    pointFormat: "{point.y} dakika",
+    pointFormatter: function() {
+      return (Math.floor(this.y / 60)) + " dakika";
+    }
   },
   legend: {
     enabled: false,

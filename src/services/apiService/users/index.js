@@ -41,14 +41,34 @@ const fetchDeleteProfileImage = async (userId, accessToken) => {
     },
   };
 
-  const url = `${API_URL}/Users/DeleteProfileImage/${userId}`
+  const url = `${API_URL}/Users/DeleteProfileImage/${userId}`;
 
   return axios.delete(url, config);
+};
+
+const fetchUpdateDoNotDisturbStatus = async (values, userId, accessToken) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+
+  const url = `${API_URL}/Users/UpdateDoNotDisturbStatus/${userId}`;
+
+  return axios.put(url, values, config);
+};
+
+const fetchContactUs = async (values) => {
+  const url = `${API_URL}/Users/ContactUs`;
+
+  return axios.post(url, values);
 };
 
 export {
   fetchUpdateNameSurname,
   fetchUpdatePassword,
+  fetchContactUs,
   fetchUpdateProfileImage,
   fetchDeleteProfileImage,
+  fetchUpdateDoNotDisturbStatus
 };

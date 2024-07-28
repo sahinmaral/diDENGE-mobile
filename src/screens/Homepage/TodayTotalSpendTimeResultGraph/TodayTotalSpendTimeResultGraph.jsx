@@ -13,7 +13,6 @@ import Error from "../Error";
 
 function TodayTotalSpendTimeResultGraph() {
   const user = useSelector(selectUser);
-
   const navigation = useNavigation();
 
   const usageStatsService = new UsageStatsService();
@@ -63,8 +62,8 @@ function TodayTotalSpendTimeResultGraph() {
   };
 
   const getTodayResultGraph = useCallback(() => {
-    if (fetchResult.data === null) {
-      return getTodayResultGraphJsCode(user.addictionLevel.dailyLimit, 0);
+    if (fetchResult.data === null || user === null) {
+      return getTodayResultGraphJsCode(user ? user.addictionLevel.dailyLimit : 0, 0);
     }
 
     const totalSpentTimeOfSocialMediaApplications =
@@ -87,7 +86,8 @@ function TodayTotalSpendTimeResultGraph() {
   }, [fetchResult]);
 
   useEffect(() => {
-    getSpentTimeOfAllSocialMediaApplication();
+      getSpentTimeOfAllSocialMediaApplication();
+    
   }, []);
 
   const Header = () => {

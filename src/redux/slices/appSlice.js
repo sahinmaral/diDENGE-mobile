@@ -29,7 +29,8 @@ const initialState = {
   wordOfTheDay: null,
   spendTimeInterval: initialSpendTimeInterval,
   commonNotificationInterval: initialCommonNotificationInterval,
-  socialMediaAddictionLevelTestReminderInterval: initialSocialMediaAddictionLevelTestReminderNotificationInterval
+  socialMediaAddictionLevelTestReminderInterval: initialSocialMediaAddictionLevelTestReminderNotificationInterval,
+  isStartOfTheDayCheckPassed : false
 };
 
 export const appSlice = createSlice({
@@ -57,6 +58,9 @@ export const appSlice = createSlice({
     refreshSocialMediaAddictionLevelTestReminderInterval: (state) => {
       state.socialMediaAddictionLevelTestReminderInterval = initialSocialMediaAddictionLevelTestReminderNotificationInterval;
     },
+    setIsStartOfTheDayCheckPassed : (state, action) => {
+      state.isStartOfTheDayCheckPassed = action.payload
+    }
   },
 });
 
@@ -67,11 +71,13 @@ export const {
   setSocialMediaAddictionLevelTestReminderInterval,
   refreshSpendTimeInterval,
   refreshCommonNotificationInterval,
+  setIsStartOfTheDayCheckPassed,
   refreshSocialMediaAddictionLevelTestReminderInterval
 } = appSlice.actions;
 
 export const selectWordOfTheDay = (state) => state.app.wordOfTheDay;
 export const selectSpendTimeInterval = (state) => state.app.spendTimeInterval;
 export const selectCommonNotificationInterval = (state) => state.app.commonNotificationInterval;
+export const selectIsStartOfTheDayCheckPassed = (state) => state.app.isStartOfTheDayCheckPassed;
 
 export default appSlice.reducer;

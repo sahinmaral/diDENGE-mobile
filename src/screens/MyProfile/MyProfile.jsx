@@ -54,7 +54,7 @@ function MyProfile({ navigation }) {
         </View>
       </View>
       <View className="flex-[0.5]"></View>
-      <View className="flex-[7]">
+      <View className="flex-[6]">
         <MenuItem
           header="Ad soyad bilgilerini güncelle"
           onPress={() =>
@@ -71,23 +71,11 @@ function MyProfile({ navigation }) {
             handlePressMenuItem(ModalContentTypes.UpdateProfileImage)
           }
         />
-
-        <MenuItem
-          header="Odak Mod Kapat"
-          onPress={() => handlePressMenuItem(ModalContentTypes.CloseFocusMode)}
-        />
-        <MenuItem
-          header="Sesli Bildirim Kapat"
-          onPress={() =>
-            handlePressMenuItem(ModalContentTypes.ToggleNotificationSound)
-          }
-        />
-        <MenuItem
-          header="Odak Modu Ayarla"
-          onPress={() => handlePressMenuItem(ModalContentTypes.SetFocusMode)}
-        />
+      </View>
+      <View className="flex-[1]">
         <MenuItem header="Çıkış Yap" onPress={logout} />
       </View>
+      <View className="flex-[0.5]"></View>
     </Container>
   );
 }

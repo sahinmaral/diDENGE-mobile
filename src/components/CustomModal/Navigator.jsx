@@ -12,6 +12,7 @@ import CloseFocusModeModalContent from "./Contents/CloseFocusModeModalContent";
 import ToggleNotificationSound from "./Contents/ToggleNotificationSoundModalContent";
 import SetFocusMode from "./Contents/SetFocusModeModalContent";
 import VerifyExitSocialMediaAddictionLevelIdentification from "./Contents/VerifyExitSocialMediaAddictionLevelIdentificationModalContent"
+import VerifyExitSendVerificationCodeModalContent from "./Contents/VerifyExitSendVerificationCodeModalContent"
 
 function Navigator() {
   const modalProperties = useSelector(selectModal);
@@ -40,6 +41,8 @@ function Navigator() {
         return <SetFocusMode />
       case ModalContentTypes.VerifyExitSocialMediaAddictionLevelIdentification:
         return <VerifyExitSocialMediaAddictionLevelIdentification />
+      case ModalContentTypes.VerifyExitSendVerificationCodeModalContent:
+        return <VerifyExitSendVerificationCodeModalContent />
       default:
         return null;
     }

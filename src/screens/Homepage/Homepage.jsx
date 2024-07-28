@@ -13,9 +13,12 @@ import ModalContentTypes from "../../enums/ModalContentTypes";
 import { useFocusEffect } from "@react-navigation/native";
 import TodayTotalSpendTimeResultGraph from "./TodayTotalSpendTimeResultGraph/TodayTotalSpendTimeResultGraph";
 import UserProfileShort from "./UserProfileShort/UserProfileShort";
+import UserBrief from "./UserBrief";
+import { useNavigation } from '@react-navigation/native';
 
 function Homepage({ updateCurrentScreen }) {
   const dispatch = useDispatch();
+  const navigation = useNavigation()
 
   const handleHardwareBackPress = () => {
     dispatch(setModalContent(ModalContentTypes.VerifyCloseApp));
@@ -53,23 +56,14 @@ function Homepage({ updateCurrentScreen }) {
       </View>
 
       <View className="flex-[3]">
-        <View>
-          <Text className="text-white text-[18px] font-medium">Özet</Text>
-          <Text className="text-white">
-            Kullanıcının haftalık ne kadar vakit geçirdiği ve sıklıkla hangi
-            uygulamada vakit geçirdiğine dair özet bilgi
-          </Text>
-        </View>
-        <View className="items-end">
-          <Text className="underline text-saffronMango">Detay göster</Text>
-        </View>
+        <UserBrief navigation={navigation}/>
       </View>
 
       <View className="flex-[2]">
         <WordOfTheDay />
       </View>
 
-      <View className="flex-[1.5]">
+      {/* <View className="flex-[1.5]">
         <View>
           <Text className="text-white text-[18px] font-medium">Odak Mod</Text>
           <View className="flex flex-row justify-between">
@@ -79,7 +73,7 @@ function Homepage({ updateCurrentScreen }) {
             </Text>
           </View>
         </View>
-      </View>
+      </View> */}
 
       <View className="flex-[8]">
         <TodayTotalSpendTimeResultGraph />

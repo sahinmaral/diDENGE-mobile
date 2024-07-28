@@ -1,4 +1,4 @@
-import { Pressable, TextInput, View, Text, Animated } from "react-native";
+import { Pressable, TextInput, View, Text } from "react-native";
 import { useSelector } from "react-redux";
 import { selectUser, setUser } from "../../../redux/slices/authSlice";
 import { toggleModal } from "../../../redux/slices/modalSlice";
@@ -6,18 +6,14 @@ import { useFormik } from "formik";
 import UpdateNameSurnameSchema from "../../../schemas/UpdateNameSurnameSchema";
 import { useEffect } from "react";
 import { useToast } from "react-native-toast-notifications";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import useSpinAnimation from "../../../hooks/useSpinAnimation";
 import apiService from "../../../services/apiService";
 import { useDispatch } from "react-redux";
+import LoadingSpin from "../../LoadingSpin";
 
 function UpdateNameSurnameModalContent() {
   const user = useSelector(selectUser);
 
   const dispatch = useDispatch();
-
-  const spin = useSpinAnimation();
 
   const toast = useToast();
 
@@ -56,7 +52,8 @@ function UpdateNameSurnameModalContent() {
   const handleSubmit = (values) => {
     const sendingValues = setValuesAsCorrectFormat(values);
 
-    apiService.users.fetchUpdateNameSurname(sendingValues, user.id, user.accessToken)
+    apiService.users
+      .fetchUpdateNameSurname(sendingValues, user.id, user.accessToken)
       .then(() => {
         dispatch(
           setUser({
@@ -125,9 +122,7 @@ function UpdateNameSurnameModalContent() {
         <View className="flex flex-row items-center gap-10">
           <Text className="text-white text-[22px] font-medium">Güncelle</Text>
           {formik.isSubmitting ? (
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
-              <FontAwesomeIcon icon={faArrowsRotate} color="white" size={20} />
-            </Animated.View>
+            <LoadingSpin spinStatus={formik.isSubmitting} />
           ) : null}
         </View>
       </Pressable>

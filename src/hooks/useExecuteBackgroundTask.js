@@ -16,6 +16,7 @@ import {
   refreshSocialMediaAddictionLevelTestReminderInterval,
   refreshSpendTimeInterval,
   setCommonNotificationInterval,
+  setIsStartOfTheDayCheckPassed,
   setSocialMediaAddictionLevelTestReminderInterval,
 } from "../redux/slices/appSlice";
 import PushNotificationType from "../enums/PushNotificationType";
@@ -62,6 +63,7 @@ const useExecuteBackgroundTask = (
   spendTimeInterval,
   commonNotificationInterval,
   socialMediaAddictionLevelTestReminderInterval,
+  isStartOfTheDayCheckPassed,
   navigation
 ) => {
   const dispatch = useDispatch();
@@ -72,14 +74,17 @@ const useExecuteBackgroundTask = (
   const socialMediaAddictionLevelTestReminderIntervalRef = useRef(
     socialMediaAddictionLevelTestReminderInterval
   );
+  const isStartOfTheDayCheckPassedRef = useRef(isStartOfTheDayCheckPassed);
 
   const handleExecuteBackgroundTask = async (taskDataArguments) => {
     const { delay } = taskDataArguments;
     await new Promise(async () => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
-        const isUserReadyForUsingApp = isSameDateWithCurrentDate(user.addictionLevel.createdAt)
-
-        if(!isUserReadyForUsingApp){
+        const isUserNotReadyForUsingApp = isSameDateWithCurrentDate(
+          user.addictionLevel.createdAt
+        );
+        
+        if (isUserNotReadyForUsingApp) {
           await sleep(delay);
           continue;
         }
@@ -97,6 +102,7 @@ const useExecuteBackgroundTask = (
         );
 
         await handleUpdateProcedurePointInformationAndSocialMediaApplicationUsages(
+          isNetworkConnected,
           socialMediaApplicationUsagesDto.totalSpentTimeOfSocialMediaApplicationsAsMinutes,
           socialMediaApplicationUsages
         );
@@ -135,6 +141,10 @@ const useExecuteBackgroundTask = (
   }, [commonNotificationInterval]);
 
   useEffect(() => {
+    isStartOfTheDayCheckPassedRef.current = isStartOfTheDayCheckPassed;
+  }, [isStartOfTheDayCheckPassed]);
+
+  useEffect(() => {
     socialMediaAddictionLevelTestReminderIntervalRef.current =
       socialMediaAddictionLevelTestReminderInterval;
   }, [socialMediaAddictionLevelTestReminderInterval]);
@@ -150,15 +160,19 @@ const useExecuteBackgroundTask = (
       socialMediaApplicationUsages
     ) => {
       const currentUser = userRef.current;
+      const currentIsStartOfTheDayCheckPassed = isStartOfTheDayCheckPassedRef.current
 
-      const isCurrentTimeStartOfTheDay =
-        getStartOfTheDayTime().isSame(getCurrentTime(), "hour") &&
-        getStartOfTheDayTime().isSame(getCurrentTime(), "minute");
+      const isCurrentTimeStartOfTheDay = getStartOfTheDayTime().isSame(
+        getCurrentTime(),
+        "hour"
+      );
 
-      if (isCurrentTimeStartOfTheDay) {
+      if (isCurrentTimeStartOfTheDay && currentIsStartOfTheDayCheckPassed === false) {
+
         dispatch(refreshSpendTimeInterval());
         dispatch(refreshCommonNotificationInterval());
         dispatch(refreshSocialMediaAddictionLevelTestReminderInterval());
+        dispatch(setIsStartOfTheDayCheckPassed(true))
 
         const currentProcedurePointInformationGrade =
           procedureService.calculateCurrentProcedurePointInformationGrade(
@@ -183,22 +197,26 @@ const useExecuteBackgroundTask = (
             newProcedurePointInformationGrade
           );
 
+
         if (isNetworkConnected) {
+
           try {
-            const [savedProcedurePointInformationsResponse] = await Promise.all(
+            const allTaskResult = await Promise.all(
               [
-                await fetchAddOrUpdateProcedurePointInformations({
+                await apiService.procedures.fetchAddOrUpdateProcedurePointInformations({
                   userId: currentUser.id,
                   procedurePointInformations:
                     copiedProcedurePointInformation.all,
                 }),
-                await fetchAddSocialMediaApplicationUsages({
+                await apiService.socialMediaApplicationUsages.fetchAddSocialMediaApplicationUsages({
                   userId: currentUser.id,
                   addictionLevelId: currentUser.addictionLevel.id,
                   socialMediaApplicationUsages,
                 }),
               ]
             );
+
+            const savedProcedurePointInformationsResponse = allTaskResult[0]
 
             const savedProcedurePointInformationsResponseData =
               savedProcedurePointInformationsResponse.data.items;
@@ -222,8 +240,8 @@ const useExecuteBackgroundTask = (
         } else {
           await procedureService.updateNewSavedProcedurePointInformations(
             currentUser,
-            copiedProcedurePointInformation,
-            ProcedurePointInformationSaveStatusTypes.MustUpdate,
+              savedProcedurePointInformationsResponseData,
+              ProcedurePointInformationSaveStatusTypes.Lately,
             dispatch
           );
 
@@ -232,6 +250,8 @@ const useExecuteBackgroundTask = (
             socialMediaApplicationUsages
           );
         }
+      }else if(!isCurrentTimeStartOfTheDay && currentIsStartOfTheDayCheckPassed == true){
+        dispatch(setIsStartOfTheDayCheckPassed(false))
       }
     };
 
@@ -247,6 +267,7 @@ const useExecuteBackgroundTask = (
     if (foundNotificationContent) {
       const commonNotificationIntervalEnum =
         returnCurrentTimeHourAsCommonNotificationEnum();
+
       const currentCommonNotificationInterval =
         commonNotificationIntervalRef.current;
 
@@ -287,14 +308,14 @@ const useExecuteBackgroundTask = (
     const beginningOfSpendTimeStrategy = {
       condition:
         totalSpentTime > 0 &&
-        totalSpentTime <= firstPieceOfFirstPositiveInterval * 2,
+        totalSpentTime <= firstPieceOfFirstPositiveInterval * 3,
       strategy: BeginningOfSpendTimeDynamicNotificationStrategy,
     };
 
     const nearlyHalfOfSpendTimeStrategy = {
       condition:
-        totalSpentTime > firstPieceOfFirstPositiveInterval * 4 &&
-        totalSpentTime < firstPieceOfFirstPositiveInterval * 5,
+        totalSpentTime > firstPieceOfFirstPositiveInterval * 3 &&
+        totalSpentTime <= firstPieceOfFirstPositiveInterval * 5,
       strategy: NearlyHalfOfSpendTimeDynamicNotificationStrategy,
     };
 
@@ -302,14 +323,14 @@ const useExecuteBackgroundTask = (
       condition:
         totalSpentTime > halfOfUserDailyLimit &&
         totalSpentTime <=
-          halfOfUserDailyLimit + secondPieceFirstPositiveInterval,
+          halfOfUserDailyLimit + secondPieceFirstPositiveInterval * 6,
       strategy: AfterHalfSpendTimeDynamicNotificationStrategy,
     };
 
     const nearlyAllOfSpendTimeStrategy = {
       condition:
         totalSpentTime >
-          halfOfUserDailyLimit + secondPieceFirstPositiveInterval * 9 &&
+          halfOfUserDailyLimit + secondPieceFirstPositiveInterval * 6 &&
         totalSpentTime <= userDailyLimit,
       strategy: NearlyAllOfSpendTimeDynamicNotificationStrategy,
     };
@@ -317,13 +338,13 @@ const useExecuteBackgroundTask = (
     const afterAllOfSpendTimeStrategy = {
       condition:
         totalSpentTime > userDailyLimit &&
-        totalSpentTime < userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
+        totalSpentTime <= userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
       strategy: AfterAllOfSpendTimeDynamicNotificationStrategy,
     };
 
     const failedOfObeyingStrategy = {
       condition:
-        totalSpentTime >= userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
+        totalSpentTime > userDailyLimit + DAILY_LIMIT_EXCESSION_AMOUNT,
       strategy: FailedOfObeyingSpendTimeDynamicNotificationStrategy,
     };
 

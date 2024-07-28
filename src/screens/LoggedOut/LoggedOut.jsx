@@ -7,7 +7,13 @@ import { clearUser } from "../../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { sleep } from "../../utils/timeUtils";
 import BackgroundService from "react-native-background-actions";
-import { useFocusEffect,CommonActions } from "@react-navigation/native";
+import { useFocusEffect, CommonActions } from "@react-navigation/native";
+import {
+  refreshCommonNotificationInterval,
+  refreshSocialMediaAddictionLevelTestReminderInterval,
+  refreshSpendTimeInterval,
+  setIsStartOfTheDayCheckPassed,
+} from "../../redux/slices/appSlice";
 
 function LoggedOut({ navigation, route }) {
   const dispatch = useDispatch();
@@ -24,7 +30,13 @@ function LoggedOut({ navigation, route }) {
     await BackgroundService.stop();
     await sleep(3000);
 
-    dispatch(clearUser());
+    dispatch(clearUser()),
+    dispatch(refreshSpendTimeInterval()),
+    dispatch(refreshCommonNotificationInterval()),
+    dispatch(refreshSocialMediaAddictionLevelTestReminderInterval()),
+    dispatch(setIsStartOfTheDayCheckPassed(false));
+
+
 
     navigation.dispatch(
       CommonActions.reset({

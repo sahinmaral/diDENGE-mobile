@@ -1,5 +1,5 @@
 import StoreProcedurePointInformationDto from "../../classes/StoreProcedurePointInformationDto";
-import { MAX_GRADE_INTERVAL, MIN_GRADE_INTERVAL } from "../../constants";
+import { MAX_GRADE_INTERVAL, MIN_GRADE_INTERVAL, Q_LEARNING_WEIGHT_VECTOR_COEFFICIENT } from "../../constants";
 import * as LocalStorageKeys from "../../constants/localStorageKeys";
 import ProcedurePointInformationSaveStatusTypes from "../../enums/ProcedurePointInformationSaveStatusTypes";
 import ProcedureTypes from "../../enums/ProcedureTypes";
@@ -66,6 +66,7 @@ class ProcedureService {
   };
 
   getCurrentProcedurePointInformation = (userProcedurePointInformations) => {
+
     const admirationProcedure = userProcedurePointInformations.find(
       (procedurePointInformation) =>
         procedurePointInformation.procedure.name === ProcedureTypes.Admiration

@@ -180,6 +180,9 @@ function Details() {
   }, [fetchResult]);
 
   const getSocialMediaApplicationUsagesByStartTime = (startTime) => {
+    if(user === null)
+      throw "Seçtiğiniz tarihe ait herhangi bir sosyal medya uygulama kullanım detayı bulunamadı";
+
     apiService.socialMediaApplicationUsages
       .fetchGetSocialMediaApplicationUsagesByStartAndEndTime(user.id, startTime)
       .then((response) => {
@@ -187,6 +190,8 @@ function Details() {
           ...fetchResult,
           data: response.data,
         });
+
+        console.log(response.data);
 
         if (response.data.every((element) => element.length === 0)) {
           throw "Seçtiğiniz tarihe ait herhangi bir sosyal medya uygulama kullanım detayı bulunamadı";

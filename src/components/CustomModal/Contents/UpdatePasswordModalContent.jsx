@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Pressable, TextInput, View, Text, Animated } from "react-native";
+import { Pressable, TextInput, View, Text } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import useSpinAnimation from "../../../hooks/useSpinAnimation";
 import { useToast } from "react-native-toast-notifications";
 import { useFormik } from "formik";
 import UpdatePasswordSchema from "../../../schemas/UpdatePasswordSchema";
 import apiService from "../../../services/apiService";
-import { selectUser, setUser } from "../../../redux/slices/authSlice";
+import { selectUser } from "../../../redux/slices/authSlice";
 import { toggleModal } from "../../../redux/slices/modalSlice";
 import {
-  faArrowsRotate,
   faEye,
   faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useNavigation } from "@react-navigation/native";
 import translatedErrorMessages from "../../../locale";
+import LoadingSpin from "../../LoadingSpin";
 
 function UpdatePasswordModalContent() {
   const user = useSelector(selectUser);
@@ -23,9 +22,6 @@ function UpdatePasswordModalContent() {
   const navigation = useNavigation();
 
   const dispatch = useDispatch();
-
-  const spin = useSpinAnimation();
-
   const toast = useToast();
 
   const [securePassword, setSecurePassword] = useState({
@@ -177,9 +173,7 @@ function UpdatePasswordModalContent() {
         <View className="flex flex-row items-center gap-10">
           <Text className="text-white text-[22px] font-medium">Güncelle</Text>
           {formik.isSubmitting ? (
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
-              <FontAwesomeIcon icon={faArrowsRotate} color="white" size={20} />
-            </Animated.View>
+            <LoadingSpin spinStatus={formik.isSubmitting} />
           ) : null}
         </View>
       </Pressable>

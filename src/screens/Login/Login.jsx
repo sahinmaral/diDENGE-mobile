@@ -1,15 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-  Image,
-  Animated,
-} from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, Text, TextInput, View, Image } from "react-native";
 import appLogo from "../../../assets/appLogo.png";
-import facebookLogo from "../../../assets/facebookLogo.png";
-import googleLogo from "../../../assets/googleLogo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import Container from "../../components/Container/Container";
 import { useFormik } from "formik";
@@ -17,9 +8,8 @@ import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { useToast } from "react-native-toast-notifications";
 import LoginUserSchema from "../../schemas/LoginUserSchema";
 import translatedErrorMessages from "../../locale";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import useSpinAnimation from "../../hooks/useSpinAnimation";
 import apiService from "../../services/apiService";
+import LoadingSpin from "../../components/LoadingSpin";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../redux/slices/authSlice";
 import { setWordOfTheDay } from "../../redux/slices/appSlice";
@@ -41,7 +31,6 @@ function Login({ navigation }) {
   const [securePassword, setSecurePassword] = useState(true);
 
   const user = useSelector((state) => state.auth.user);
-  const spin = useSpinAnimation();
   const toast = useToast();
   const dispatch = useDispatch();
 
@@ -83,6 +72,10 @@ function Login({ navigation }) {
       if (user !== null) {
         if (!hasPermissionOfUsageStats) {
           navigation.navigate("CheckPermissionForNewUser");
+        } else if (!user.phoneNumberConfirmed) {
+          navigation.navigate("SendOtpVerification", {
+            userId: user.id,
+          });
         } else {
           const timeOfLatestSocialMediaAddictionLevelTest = differenceInDays(
             getCurrentTime(),
@@ -166,6 +159,8 @@ function Login({ navigation }) {
         SUCCESSFULLY_LOGGED_IN,
         new ToastOptions(ToastTypes.Success)
       );
+
+      formik.resetForm();
     } catch (error) {
       console.log(JSON.stringify(error));
       if (error.response) {
@@ -181,6 +176,8 @@ function Login({ navigation }) {
           new ToastOptions(ToastTypes.Danger)
         );
       }
+    } finally {
+      formik.setSubmitting(false);
     }
   };
 
@@ -236,41 +233,12 @@ function Login({ navigation }) {
         <View style={{ flex: 2 / 9 }}>
           <Pressable
             onPress={async (e) => await formik.handleSubmit(e)}
-            className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]"
+            className="items-center justify-center flex-row bg-darkJungleGreen rounded-md h-[50px]"
           >
-            <View className="flex flex-row items-center gap-10">
-              <Text className="text-white text-[22px] font-light">
-                Giriş yap
-              </Text>
-              {formik.isSubmitting ? (
-                <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                  <FontAwesomeIcon
-                    icon={faArrowsRotate}
-                    color="white"
-                    size={20}
-                  />
-                </Animated.View>
-              ) : null}
-            </View>
-          </Pressable>
-        </View>
-      </View>
-      <View className="gap-4 flex-[2]">
-        <View className="flex-row items-center justify-center">
-          <View className="w-1/4 h-0.5 bg-white"></View>
-          <View className="w-2/4 justify-center items-center">
-            <Text className="text-white text-[16px]">
-              Diğer Giriş Seçenekleri
-            </Text>
-          </View>
-          <View className="w-1/4 h-0.5 bg-white"></View>
-        </View>
-        <View className="flex-row justify-center gap-4">
-          <Pressable>
-            <Image source={facebookLogo} className="w-[50] h-[50]" />
-          </Pressable>
-          <Pressable>
-            <Image source={googleLogo} className="w-[50] h-[50]" />
+            <Text className="text-white text-[22px] font-light">Giriş yap</Text>
+            {formik.isSubmitting ? (
+              <LoadingSpin spinStatus={formik.isSubmitting} />
+            ) : null}
           </Pressable>
         </View>
       </View>

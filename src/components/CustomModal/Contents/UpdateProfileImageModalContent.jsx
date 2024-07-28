@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Pressable, View, Text, Image, Animated } from "react-native";
+import { Pressable, View, Text, Image } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useToast } from "react-native-toast-notifications";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,9 +7,7 @@ import { selectUser, setUser } from "../../../redux/slices/authSlice";
 import { toggleModal } from "../../../redux/slices/modalSlice";
 import defaultUserImage from "../../../../assets/default-user.png";
 import apiService from "../../../services/apiService";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import useSpinAnimation from "../../../hooks/useSpinAnimation";
+import LoadingSpin from "../../LoadingSpin";
 
 function UpdateProfileImageModalContent() {
   const [form, setForm] = useState({
@@ -20,11 +18,7 @@ function UpdateProfileImageModalContent() {
   });
 
   const user = useSelector(selectUser);
-
   const toast = useToast();
-
-  const spin = useSpinAnimation();
-
   const dispatch = useDispatch();
 
   const openImageLibrary = () => {
@@ -74,7 +68,8 @@ function UpdateProfileImageModalContent() {
 
     setForm({ ...form, isSubmitting: true });
 
-    apiService.users.fetchUpdateProfileImage(formData, user.id, user.accessToken)
+    apiService.users
+      .fetchUpdateProfileImage(formData, user.id, user.accessToken)
       .then((response) => {
         const newProfilePhotoURL = response.data.newProfileImagePath;
         dispatch(setUser({ ...user, profilePhotoURL: newProfilePhotoURL }));
@@ -102,7 +97,8 @@ function UpdateProfileImageModalContent() {
   const handleDeleteProfileImage = () => {
     setForm({ ...form, isSubmitting: true });
 
-    apiService.users.fetchDeleteProfileImage(user.id, user.accessToken)
+    apiService.users
+      .fetchDeleteProfileImage(user.id, user.accessToken)
       .then((response) => {
         dispatch(setUser({ ...user, profilePhotoURL: null }));
 
@@ -173,14 +169,7 @@ function UpdateProfileImageModalContent() {
           className="w-[100px] h-[100px] rounded-full"
         />
         {form.isSubmitting ? (
-          <Animated.View
-            className="absolute mt-10"
-            style={{
-              transform: [{ rotate: spin }],
-            }}
-          >
-            <FontAwesomeIcon icon={faArrowsRotate} color="#2660A4" size={50} />
-          </Animated.View>
+          <LoadingSpin spinStatus={form.isSubmitting} />
         ) : null}
       </View>
       <View className="flex-row mt-8 w-full">

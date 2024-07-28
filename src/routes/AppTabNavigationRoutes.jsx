@@ -5,7 +5,7 @@ import TabButtonGroup from "../components/TabButtonGroup";
 import Homepage from "../screens/Homepage";
 import Settings from "../screens/Settings";
 import MyProfile from "../screens/MyProfile";
-import ContactForm from "../screens/ContactForm";
+import ContactUs from "../screens/ContactUs";
 import MyProgress from "../screens/MyProgress";
 import Statistics from "../screens/Statistics";
 import CheckInternet from "../screens/CheckInternet";
@@ -25,6 +25,7 @@ function AppTabNavigatorRoutes({ navigation }) {
     spendTimeInterval,
     commonNotificationInterval,
     socialMediaAddictionLevelTestReminderInterval,
+    isStartOfTheDayCheckPassed
   } = useSelector((state) => state.app);
 
   useExecuteBackgroundTask(
@@ -32,6 +33,7 @@ function AppTabNavigatorRoutes({ navigation }) {
     spendTimeInterval,
     commonNotificationInterval,
     socialMediaAddictionLevelTestReminderInterval,
+    isStartOfTheDayCheckPassed,
     navigation
   );
 
@@ -57,8 +59,6 @@ function AppTabNavigatorRoutes({ navigation }) {
     <Statistics updateCurrentScreen={updateCurrentScreen} />
   );
 
-  const TestScreen = () => (<View><Text>{JSON.stringify(user)}</Text></View>)
-
   if (netInfoState.type === "unknown") {
     return <Loading />;
   }
@@ -71,13 +71,13 @@ function AppTabNavigatorRoutes({ navigation }) {
     <View style={{ flex: 1 }}>
       <View style={{ flex: 0.92 }}>
         <Stack.Navigator
-          initialRouteName="Test"
+          initialRouteName="Homepage"
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="Homepage" component={HomepageScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="MyProfile" component={MyProfile} />
-          <Stack.Screen name="ContactForm" component={ContactForm} />
+          <Stack.Screen name="ContactUs" component={ContactUs} />
           <Stack.Screen name="MyProgress" component={MyProgressScreen} />
           <Stack.Screen name="Statistics" component={StatisticsScreen} />
         </Stack.Navigator>

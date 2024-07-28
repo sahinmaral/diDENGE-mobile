@@ -55,7 +55,7 @@ function CheckPermissionForNewUser({ navigation }) {
 
   useEffect(() => {
     if (isUsageStatPermissionGranted) {
-      if (user.isNewUser) {
+      if (user?.isNewUser) {
         navigation.navigate(
           "ExplanationOfSocialMediaAddictiveLevelIdentification",
           {

@@ -13,9 +13,6 @@ import DatePicker from "react-native-date-picker";
 import { useEffect, useState } from "react";
 import moment from "moment";
 import apiService from "../../services/apiService";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import useSpinAnimation from "../../hooks/useSpinAnimation.js";
 import { useToast } from "react-native-toast-notifications";
 import ContinueRegisterUserSchema from "../../schemas/ContinueRegisterUserSchema.js";
 import translatedErrorMessages from "../../locale/index.js";
@@ -24,13 +21,12 @@ import ToastTypes from "../../enums/ToastTypes.js";
 import { sleep } from "../../utils/timeUtils.js";
 import { SUCCESSFULLY_REGISTERED } from "../../constants/messages/index.js";
 import ToastService from "../../services/toastService/index.js";
+import LoadingSpin from "../../components/LoadingSpin/LoadingSpin.jsx";
 
 function ContinueRegister({ navigation, route }) {
   const { requiredInformations } = route.params;
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-  const spin = useSpinAnimation();
 
   const toast = useToast();
   const toastService = new ToastService(toast);
@@ -69,10 +65,14 @@ function ContinueRegister({ navigation, route }) {
 
   const handleSubmit = async (values) => {
     try {
-      await apiService.auth.fetchRegisterUser({
-        ...values,
-        phoneNumber: `+90${values.phoneNumber}`,
-      });
+      const fetchRegisterUserResponse = await apiService.auth.fetchRegisterUser(
+        {
+          ...values,
+          phoneNumber: `+90${values.phoneNumber}`,
+        }
+      );
+
+      const { data: fetchRegisterUserResponseData } = fetchRegisterUserResponse;
 
       toastService.showToast(
         SUCCESSFULLY_REGISTERED,
@@ -81,7 +81,9 @@ function ContinueRegister({ navigation, route }) {
 
       await sleep(3000);
 
-      navigation.navigate("Login");
+      navigation.navigate("SendOtpVerification", {
+        userId: fetchRegisterUserResponseData.userId,
+      });
     } catch (error) {
       if (error.response) {
         const { data } = error.response;
@@ -166,18 +168,12 @@ function ContinueRegister({ navigation, route }) {
             onPress={formik.handleSubmit}
             className="items-center justify-center bg-darkJungleGreen rounded-md h-[50px]"
           >
-            <View className="flex flex-row items-center gap-10">
+            <View className="flex flex-row justify-center items-center">
               <Text className="text-white text-[22px] font-light">
                 Kaydı Tamamla
               </Text>
               {formik.isSubmitting ? (
-                <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                  <FontAwesomeIcon
-                    icon={faArrowsRotate}
-                    color="white"
-                    size={20}
-                  />
-                </Animated.View>
+                <LoadingSpin spinStatus={formik.isSubmitting} />
               ) : null}
             </View>
           </Pressable>
